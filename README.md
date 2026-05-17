@@ -1,0 +1,124 @@
+# HYDRA
+
+Plataforma experimental de análisis documental que combina extracción estructurada, búsqueda semántica, generación de briefings y evaluación reproducible sobre un corpus cerrado de fuentes públicas.
+
+## Objetivo
+
+Prueba funcional de concepto para un TFM de IA. El MVP busca demostrar cómo un sistema basado en IA generativa, recuperación semántica y evaluación reproducible puede ayudar a explorar narrativas en documentos públicos.
+
+## Alcance del MVP
+
+- corpus cerrado de 10-20 documentos;
+- metadatos completos por documento;
+- extracción estructurada validada con Pydantic;
+- ontología ligera;
+- RAG sobre PostgreSQL + pgvector;
+- endpoints FastAPI para consultas, briefing y evals;
+- frontend analítico mínimo;
+- trazabilidad con Langfuse Cloud o logs locales;
+- evals reproducibles;
+- respuestas con evidencias y limitaciones.
+
+Fuera de alcance para el MVP:
+
+- scraping masivo;
+- ingesta en tiempo real;
+- redes sociales;
+- detección de bots;
+- atribución geopolítica;
+- autenticación;
+- Neo4j;
+- fine-tuning.
+
+## Stack previsto
+
+- Backend: Python, `uv`, FastAPI, Pydantic.
+- Frontend: Next.js, TypeScript, Tailwind, `pnpm`.
+- RAG: LangChain / LCEL, PostgreSQL + pgvector.
+- Modelos: Qwen 3.6 + Gemma 4.
+- Observabilidad: Langfuse Cloud.
+- Evals: Langfuse Cloud.
+- Ontología: YAML/JSON.
+- Spec-driven development
+
+## Estructura del repositorio
+
+Este repositorio Git está inicializado dentro de la carpeta `hydra/`. Por eso, desde este README las rutas son relativas a esta raíz:
+
+```text
+docs/                 Documentación estable del proyecto
+sdd/                  Especificación ejecutable y tareas atómicas
+back/                 Backend FastAPI previsto
+front/                Frontend previsto
+docker-compose.yml    PostgreSQL + pgvector previsto
+```
+
+## Documentación principal
+
+- `docs/hydra-analysis.md`: análisis ejecutivo, alcance y riesgos.
+- `docs/hydra-architecture.md`: arquitectura vigente y decisiones técnicas.
+- `docs/hydra-brainstorming.md`: material histórico de ideación.
+- `sdd/README.md`: convención de trabajo Specification-Driven Development.
+- `sdd/03-api-contract.md`: contrato API mínimo.
+- `sdd/07-implementation-plan.md`: fases de implementación.
+- `sdd/09-droid-execution-workflow.md`: workflow Codex planner/reviewer -> Droid executor.
+
+## Workflow de implementación
+
+El flujo de trabajo previsto es:
+
+1. Definir el bloque funcional a implementar.
+2. Revisar el SDD como fuente de verdad.
+3. Dividir el trabajo en tareas atómicas.
+4. Crear un Task Packet o Mission Brief para Droid.
+5. Ejecutar Droid solo sobre archivos permitidos.
+6. Revisar diff, comandos, secretos y criterios de aceptación.
+7. Integrar o crear una repair task si algo falla.
+
+Orden recomendado:
+
+```text
+1. Repo y seguridad
+2. Backend base
+3. Database
+4. Corpus
+5. Ontología y extracción
+6. RAG
+7. Observabilidad
+8. Evals
+9. Briefing / council
+10. Frontend
+11. Documentación y demo
+```
+
+## Seguridad y secretos
+
+Reglas obligatorias:
+
+- no subir API keys al repositorio;
+- no hardcodear secretos en código, Markdown, tests ni scripts;
+- usar `.env` locales para secretos reales;
+- versionar solo archivos `.env.example` con valores ficticios;
+- no exponer secretos en logs, errores, trazas ni respuestas API.
+
+Variables previstas para backend:
+
+```bash
+MODEL_API_KEY=replace_me
+MODEL_API_BASE_URL=https://model-provider.example/v1
+HYDRA_CHAT_MODEL=qwen3.6
+HYDRA_REVIEW_MODEL=gemma4
+HYDRA_EMBEDDING_MODEL=qwen3-embedding
+
+LANGFUSE_PUBLIC_KEY=replace_me
+LANGFUSE_SECRET_KEY=replace_me
+LANGFUSE_BASE_URL=https://cloud.langfuse.com
+
+DATABASE_URL=postgresql+psycopg://hydra:hydra@localhost:5432/hydra
+```
+
+Variable pública prevista para frontend:
+
+```bash
+NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
+```
