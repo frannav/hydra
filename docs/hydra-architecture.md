@@ -236,7 +236,6 @@ El detalle operativo vive en `../sdd/00-product-scope.md` y `../sdd/02-data-mode
 
 Decisiones vigentes:
 
-- Dominio unico: migracion, Canarias y confianza institucional.
 - Corpus MVP: 10-20 documentos curados.
 - Fuentes publicas con metadatos completos.
 - Cada afirmacion del briefing debe enlazar con documento, fuente, fragmento y score si procede.

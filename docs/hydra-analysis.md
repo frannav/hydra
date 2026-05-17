@@ -11,7 +11,7 @@ No es factible en ese plazo si se intenta construir una plataforma OSINT complet
 
 La version defendible para el TFM debe ser:
 
-> HYDRA Espana Lite: sistema RAG para analisis de inteligencia narrativa en fuentes publicas sobre amenazas hibridas, aplicado a un corpus cerrado de documentos sobre migracion, Canarias y confianza institucional.
+> HYDRA Espana Lite: sistema RAG para analisis de inteligencia narrativa en fuentes publicas sobre amenazas hibridas, aplicado a un corpus cerrado de documentos.
 
 La clave es venderlo como sistema de apoyo al analista, no como detector automatico de verdad, propaganda o coordinacion.
 
@@ -29,7 +29,6 @@ Este analisis asume:
 - SDD manual en Markdown, sin instalar OpenSpec por ahora, con checklist atomico en `../sdd/08-task-checklist.md`.
 - Corpus manualmente curado de 10-20 documentos, no recopilado mediante scraping complejo.
 - Textos en formato `.txt`, `.md` o `.csv`; PDF solo si se procesan de forma simple y no bloquean.
-- Una sola tematica: migracion y confianza institucional en Canarias/Espana.
 - Evaluacion ligera pero real: validacion de JSON, revision manual de recuperacion y comprobacion de evidencias.
 
 Si falta una API de LLM, si hay que resolver instalacion de modelos locales pesados, o si la dedicacion diaria es baja, el alcance debe reducirse al minimo: extraccion offline, busqueda semantica basica y briefing desde resultados preprocesados.
@@ -92,12 +91,6 @@ Matiz importante: Neo4j queda fuera como dependencia core del MVP, no como posib
 ### Nombre
 
 HYDRA Espana Lite
-
-### Dominio
-
-Migracion, Canarias y confianza institucional.
-
-Es el dominio mas recomendable porque combina contexto espanol, relevancia territorial, polarizacion publica, instituciones, medios, actores politicos, servicios publicos y riesgos narrativos. Tambien permite una demo comprensible para un tribunal no especializado en inteligencia.
 
 ### Pregunta central de demo
 

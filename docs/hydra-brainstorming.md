@@ -1,4 +1,4 @@
-# HYDRA España Lite
+# HYDRA
 
 ## Radar OSINT de inteligencia narrativa y amenazas híbridas
 
@@ -12,7 +12,7 @@
 
 ## 1. Resumen ejecutivo
 
-**HYDRA España Lite** es una plataforma OSINT basada en IA generativa para analizar narrativas de desinformación, campañas informativas y señales de amenazas híbridas en el contexto español.
+**HYDRA** es una plataforma OSINT basada en IA generativa para analizar narrativas de desinformación, campañas informativas y señales de amenazas híbridas en el contexto español.
 
 El objetivo **no** es construir un detector automático de noticias falsas. Eso sería una promesa floja para un TFM, porque mezcla veracidad, atribución, intención y coordinación en una sola caja negra. El enfoque serio es otro:
 
@@ -20,7 +20,7 @@ El objetivo **no** es construir un detector automático de noticias falsas. Eso 
 
 La versión recomendada para el TFM es una demo funcional acotada:
 
-> **HYDRA España Lite: Sistema de inteligencia narrativa para amenazas híbridas sobre un corpus cerrado de fuentes públicas.**
+> **HYDRA: Sistema de inteligencia narrativa para amenazas híbridas sobre un corpus cerrado de fuentes públicas.**
 
 ---
 
@@ -124,7 +124,7 @@ HYDRA sí puede plantearse como:
 
 ## 5. Versión recomendada para el TFM
 
-### HYDRA España Lite
+### HYDRA
 
 Dado que el tiempo de entrega es limitado, la versión más realista es una demo funcional sobre un corpus cerrado.
 
@@ -1198,7 +1198,7 @@ Con eso ya hay un TFM defendible.
 
 ## 29. Versión ideal pero todavía realista
 
-La versión ideal para la entrega sería **HYDRA España Lite** con estas funcionalidades:
+La versión ideal para la entrega sería **HYDRA** con estas funcionalidades:
 
 1. Corpus cerrado de noticias e informes.
 2. Extracción de narrativas, actores, eventos y riesgos.
@@ -1219,11 +1219,11 @@ Opciones recomendadas:
 2. **Análisis de narrativas de desinformación mediante IA generativa y recuperación semántica sobre fuentes públicas**
 3. **Sistema RAG para extracción y consulta de inteligencia narrativa en documentos OSINT**
 4. **Aplicación de modelos generativos al análisis estructurado de narrativas y riesgos en fuentes abiertas**
-5. **HYDRA España Lite: radar OSINT de narrativas públicas mediante IA generativa**
+5. **HYDRA: radar OSINT de narrativas públicas mediante IA generativa**
 
 ### Título recomendado
 
-> **HYDRA España Lite: sistema RAG para análisis de inteligencia narrativa en fuentes públicas sobre amenazas híbridas**
+> **HYDRA: sistema RAG para análisis de inteligencia narrativa en fuentes públicas sobre amenazas híbridas**
 
 Es preciso, técnico y defendible. No promete magia. Promete un sistema concreto con IA aplicada.
 
@@ -1247,6 +1247,6 @@ Si se implementa así, el proyecto muestra criterio técnico, madurez analítica
 
 Mi recomendación final:
 
-> Construir HYDRA España Lite sobre un corpus cerrado de migración y confianza institucional en Canarias/España, con Streamlit, Pydantic, embeddings, RAG y generación de briefings con evidencias.
+> Construir HYDRA sobre un corpus cerrado de migración y confianza institucional en Canarias/España, con Streamlit, Pydantic, embeddings, RAG y generación de briefings con evidencias.
 
 Menos humo, más sistema. Menos “IA que descubre campañas”, más trazabilidad, evidencias y límites. Ahí está el diferencial.
