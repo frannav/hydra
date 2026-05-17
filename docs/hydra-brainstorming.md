@@ -2,7 +2,7 @@
 
 ## Radar OSINT de inteligencia narrativa y amenazas híbridas
 
-> **Nota de estado:** este documento es material de brainstorming y debe conservarse como fuente de ideas, prompts y argumentos de memoria. Las decisiones vigentes de alcance y arquitectura están en `hydra-analysis.md` y `hydra-architecture.md`. Algunas recomendaciones originales, como Streamlit, ChromaDB/FAISS o JSON/CSV como persistencia principal, han sido sustituidas por la arquitectura actual: frontend en `hydra/front/`, backend en `hydra/back/`, FastAPI con `uv`, frontend con `pnpm`, PostgreSQL + pgvector, LangChain, modelos configurables, Langfuse Cloud y evals propios.
+> **Nota de estado:** este documento es material de brainstorming y debe conservarse como fuente de ideas, prompts y argumentos de memoria. Las decisiones vigentes de alcance y arquitectura están en `hydra-analysis.md` y `hydra-architecture.md`. Algunas recomendaciones originales, como Streamlit, ChromaDB/FAISS o JSON/CSV como persistencia principal, han sido sustituidas por la arquitectura actual: frontend en `hydra/frontend/`, backend en `hydra/backend/`, FastAPI con `uv`, frontend con `pnpm`, PostgreSQL + pgvector, LangChain, modelos configurables, Langfuse Cloud y evals propios.
 
 > Propuesta de proyecto de fin de máster en Inteligencia Artificial.
 >

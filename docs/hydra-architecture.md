@@ -8,8 +8,8 @@ Documento complementario a `hydra-analysis.md`
 La arquitectura recomendada es:
 
 ```text
-hydra/front/ Next.js + Tailwind
-  -> hydra/back/ FastAPI + uv
+hydra/frontend/ Next.js + Tailwind
+  -> hydra/backend/ FastAPI + uv
   -> LangChain / LCEL
   -> PostgreSQL + pgvector
   -> API de modelos compatible con OpenAI
@@ -19,7 +19,7 @@ hydra/front/ Next.js + Tailwind
 
 Decisiones principales:
 
-- **Monorepo** con `hydra/front/` y `hydra/back/`, no repositorios separados.
+- **Monorepo** con `hydra/frontend/` y `hydra/backend/`, no repositorios separados.
 - **uv** como gestor obligatorio para Python en el backend.
 - **pnpm** como gestor obligatorio para el frontend.
 - **FastAPI** como backend Python para exponer RAG, evals y consultas.
@@ -74,7 +74,7 @@ DocumentSource
 
 ### Fuentes de entrada
 
-La primera fuente sera un corpus local curado en `hydra/back/data/raw/`. Si sobra tiempo, la subida desde frontend debe ser otra fuente que entregue el mismo objeto canonico:
+La primera fuente sera un corpus local curado en `hydra/backend/data/raw/`. Si sobra tiempo, la subida desde frontend debe ser otra fuente que entregue el mismo objeto canonico:
 
 ```text
 RawDocument + DocumentMetadata
@@ -142,11 +142,11 @@ Un fallback solo se activa si el camino principal amenaza la entrega del MVP. De
 El frontend y el backend deben convivir en el mismo repositorio. La separacion recomendada es por carpetas, no por repositorios.
 
 ```text
-hydra/front/
+hydra/frontend/
   package.json
   pnpm-lock.yaml
   src/
-hydra/back/
+hydra/backend/
   pyproject.toml
   uv.lock
   src/
@@ -163,8 +163,8 @@ Las API keys no deben subirse nunca a GitHub. Esto aplica a API de modelos, Lang
 - No hardcodear API keys en codigo Python, TypeScript, notebooks, markdown, tests ni scripts.
 - Usar archivos `.env` locales para secretos reales.
 - Mantener `.env` en `.gitignore`.
-- Versionar solo `hydra/.env.example`, `hydra/back/.env.example` y `hydra/front/.env.local.example` con valores ficticios.
-- Cargar configuracion desde variables de entorno en `hydra/back/src/hydra_api/config.py`.
+- Versionar solo `hydra/.env.example`, `hydra/backend/.env.example` y `hydra/frontend/.env.local.example` con valores ficticios.
+- Cargar configuracion desde variables de entorno en `hydra/backend/src/hydra_api/config.py`.
 - Validar al arrancar que las variables obligatorias existen.
 - No imprimir secretos en logs, trazas de Langfuse, errores ni respuestas de API.
 - No guardar prompts, traces o payloads que contengan claves.
@@ -175,8 +175,8 @@ Las API keys no deben subirse nunca a GitHub. Esto aplica a API de modelos, Lang
 ```text
 .gitignore
 hydra/.env.example
-hydra/front/.env.local.example
-hydra/back/.env.example
+hydra/frontend/.env.local.example
+hydra/backend/.env.example
 ```
 
 `.gitignore` debe incluir:
@@ -185,8 +185,8 @@ hydra/back/.env.example
 .env
 .env.*
 !hydra/.env.example
-!hydra/front/.env.local.example
-!hydra/back/.env.example
+!hydra/frontend/.env.local.example
+!hydra/backend/.env.example
 ```
 
 ### Variables de entorno principales
@@ -347,7 +347,7 @@ No permitido:
 
 ### Recomendacion
 
-La opcion recomendada es **Next.js + Tailwind** en `hydra/front/` y **FastAPI** en `hydra/back/`.
+La opcion recomendada es **Next.js + Tailwind** en `hydra/frontend/` y **FastAPI** en `hydra/backend/`.
 
 Motivos:
 
@@ -722,19 +722,19 @@ Crear entre 8 y 12 casos de evaluacion:
 Guardar los resultados en dos sitios:
 
 - Langfuse Cloud, como scores asociados a trazas o dataset runs.
-- `hydra/back/data/outputs/eval_results.json` para tener backup local y reproducible.
+- `hydra/backend/data/outputs/eval_results.json` para tener backup local y reproducible.
 
 ## Arquitectura de carpetas
 
 ```text
-hydra/front/
+hydra/frontend/
   package.json
   pnpm-lock.yaml
   src/
     app/
     components/
     lib/
-hydra/back/
+hydra/backend/
   pyproject.toml
   uv.lock
   data/
@@ -774,7 +774,7 @@ hydra/README.md
 
 ### Fase 1: Base tecnica
 
-- Crear `hydra/front/` y `hydra/back/` dentro del mismo repo.
+- Crear `hydra/frontend/` y `hydra/backend/` dentro del mismo repo.
 - Inicializar backend con `uv`.
 - Inicializar frontend con `pnpm`.
 - Docker Compose con Postgres + pgvector.
@@ -821,7 +821,7 @@ hydra/README.md
 
 - Backend Python con `uv`.
 - Frontend con `pnpm`.
-- Monorepo con `hydra/front/` y `hydra/back/`.
+- Monorepo con `hydra/frontend/` y `hydra/backend/`.
 - FastAPI funcional.
 - Frontend web minimo.
 - PostgreSQL + pgvector funcional.

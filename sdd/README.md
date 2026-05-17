@@ -10,13 +10,13 @@ Crear instrucciones suficientemente precisas para que un modelo ejecutor pueda i
 
 El proyecto HYDRA vive dentro de `hydra/`. Todas las tareas, task packets y missions deben usar estas rutas completas:
 
-- `hydra/back/` para backend, datos locales, ontologia y scripts Python.
-- `hydra/front/` para frontend.
+- `hydra/backend/` para backend, datos locales, ontologia y scripts Python.
+- `hydra/frontend/` para frontend.
 - `hydra/sdd/` para la especificacion ejecutable.
 - `hydra/docs/` para documentacion estable.
 - `hydra/docker-compose.yml`, `hydra/.env.example` y `hydra/README.md` para infraestructura y documentacion del entregable.
 
-No crear `back/` ni `front/` en la raiz del workspace.
+No crear `backend/` ni `frontend/` en la raiz del workspace.
 
 ## Roles
 
@@ -41,8 +41,8 @@ Objetivo:
 Crear la configuracion base del backend usando variables de entorno.
 
 Archivos permitidos:
-- hydra/back/src/hydra_api/config.py
-- hydra/back/.env.example
+- hydra/backend/src/hydra_api/config.py
+- hydra/backend/.env.example
 
 Dependencias:
 - Ninguna
@@ -57,7 +57,7 @@ Criterios de aceptacion:
 - No hay API keys en codigo ni markdown.
 
 Comandos de verificacion:
-- `cd hydra/back && uv run python -m hydra_api.config`
+- `cd hydra/backend && uv run python -m hydra_api.config`
 
 Notas:
 - No modificar frontend.

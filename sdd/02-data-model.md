@@ -14,7 +14,7 @@
   "domain": "migracion_canarias",
   "language": "es",
   "ingestion_source": "local_corpus | frontend_upload",
-  "raw_path": "hydra/back/data/raw/doc_001.txt",
+  "raw_path": "hydra/backend/data/raw/doc_001.txt",
   "content_hash": "sha256...",
   "notes": "Motivo de inclusion"
 }

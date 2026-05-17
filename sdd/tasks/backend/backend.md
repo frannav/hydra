@@ -6,11 +6,11 @@ Estado: pending
 Prioridad: must
 
 Archivos permitidos:
-- `hydra/back/pyproject.toml`
-- `hydra/back/uv.lock`
+- `hydra/backend/pyproject.toml`
+- `hydra/backend/uv.lock`
 
 Criterios de aceptacion:
-- `cd hydra/back && uv sync` funciona.
+- `cd hydra/backend && uv sync` funciona.
 
 ## TASK-BACK-002: Crear paquete hydra_api
 
@@ -18,7 +18,7 @@ Estado: pending
 Prioridad: must
 
 Archivos permitidos:
-- `hydra/back/src/hydra_api/__init__.py`
+- `hydra/backend/src/hydra_api/__init__.py`
 
 Criterios de aceptacion:
 - El paquete es importable.
@@ -29,8 +29,8 @@ Estado: pending
 Prioridad: must
 
 Archivos permitidos:
-- `hydra/back/src/hydra_api/config.py`
-- `hydra/back/.env.example`
+- `hydra/backend/src/hydra_api/config.py`
+- `hydra/backend/.env.example`
 
 Requisitos:
 - Usar Pydantic Settings.
@@ -43,7 +43,7 @@ Estado: pending
 Prioridad: must
 
 Archivos permitidos:
-- `hydra/back/src/hydra_api/main.py`
+- `hydra/backend/src/hydra_api/main.py`
 
 Criterios de aceptacion:
 - La app FastAPI arranca.
@@ -102,7 +102,7 @@ Estado: pending
 Prioridad: must
 
 Archivos permitidos:
-- `hydra/back/src/hydra_api/schemas.py`
+- `hydra/backend/src/hydra_api/schemas.py`
 
 Requisitos:
 - Schemas para documentos, metadatos, fuentes de ingesta, narrativas, chunks, query, briefing, errores, extracciones, proyeccion de grafo y evals.

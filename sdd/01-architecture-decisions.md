@@ -33,9 +33,9 @@
 
 ## Secretos
 
-- `hydra/back/.env` para secretos reales del backend.
-- `hydra/front/.env.local` solo para variables publicas del frontend.
-- Versionar solo `hydra/.env.example`, `hydra/back/.env.example` y `hydra/front/.env.local.example`.
+- `hydra/backend/.env` para secretos reales del backend.
+- `hydra/frontend/.env.local` solo para variables publicas del frontend.
+- Versionar solo `hydra/.env.example`, `hydra/backend/.env.example` y `hydra/frontend/.env.local.example`.
 - No colocar `MODEL_API_KEY`, `LANGFUSE_SECRET_KEY` ni `DATABASE_URL` en frontend.
 
 ## Variables principales

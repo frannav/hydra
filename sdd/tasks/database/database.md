@@ -26,7 +26,7 @@ Estado: pending
 Prioridad: must
 
 Archivos permitidos:
-- `hydra/back/src/hydra_api/db.py`
+- `hydra/backend/src/hydra_api/db.py`
 
 ## TASK-DB-004: Crear tabla documents
 
@@ -92,4 +92,4 @@ Prioridad: must
 
 Archivos permitidos:
 - `hydra/README.md`
-- `hydra/back/.env.example`
+- `hydra/backend/.env.example`

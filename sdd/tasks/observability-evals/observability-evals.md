@@ -6,7 +6,7 @@ Estado: pending
 Prioridad: must
 
 Archivos permitidos:
-- `hydra/back/src/hydra_api/observability.py`
+- `hydra/backend/src/hydra_api/observability.py`
 
 ## TASK-OBS-002: Trazar retrieval
 
@@ -32,7 +32,7 @@ Estado: pending
 Prioridad: must
 
 Archivos permitidos:
-- `hydra/back/data/evals/eval_cases.json`
+- `hydra/backend/data/evals/eval_cases.json`
 
 ## TASK-EVAL-002: Implementar Precision@k
 
@@ -60,7 +60,7 @@ Estado: pending
 Prioridad: must
 
 Archivos esperados:
-- `hydra/back/data/outputs/eval_results.json`
+- `hydra/backend/data/outputs/eval_results.json`
 
 ## TASK-EVAL-007: Enviar scores a Langfuse Cloud
 

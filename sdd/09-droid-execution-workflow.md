@@ -103,11 +103,11 @@ Scope:
 Implementa solo esta tarea.
 
 Allowed files:
-- hydra/back/src/hydra_api/main.py
-- hydra/back/src/hydra_api/schemas.py
+- hydra/backend/src/hydra_api/main.py
+- hydra/backend/src/hydra_api/schemas.py
 
 Do not modify:
-- hydra/front/
+- hydra/frontend/
 - hydra/sdd/
 - hydra/docs/
 - archivos .env reales
@@ -124,7 +124,7 @@ Acceptance criteria:
 - No se modifican archivos fuera de alcance.
 
 Verification commands:
-- cd hydra/back && uv run fastapi dev src/hydra_api/main.py
+- cd hydra/backend && uv run fastapi dev src/hydra_api/main.py
 
 Report back:
 - Archivos modificados.
@@ -172,13 +172,13 @@ Validation after each milestone:
 - Confirmar que no se modifican archivos fuera de alcance.
 
 Allowed files:
-- hydra/back/pyproject.toml
-- hydra/back/uv.lock
-- hydra/back/src/hydra_api/**
-- hydra/back/.env.example
+- hydra/backend/pyproject.toml
+- hydra/backend/uv.lock
+- hydra/backend/src/hydra_api/**
+- hydra/backend/.env.example
 
 Forbidden:
-- hydra/front/**
+- hydra/frontend/**
 - hydra/docs/**
 - hydra/sdd/**
 - .env reales
@@ -297,7 +297,7 @@ Problem:
 El endpoint devuelve service="api" en lugar de "hydra-api".
 
 Allowed files:
-- hydra/back/src/hydra_api/main.py
+- hydra/backend/src/hydra_api/main.py
 
 Fix:
 Cambiar solo el valor de service.
@@ -388,6 +388,6 @@ Recomendacion:
 Ejemplo:
 
 ```bash
-git add hydra/back/src/hydra_api/main.py
+git add hydra/backend/src/hydra_api/main.py
 git commit -m "TASK-BACK-005 add health endpoint"
 ```

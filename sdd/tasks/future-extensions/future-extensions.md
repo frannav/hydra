@@ -13,8 +13,8 @@ Dependencias:
 Objetivo: exportar proyecciones de grafo derivadas de extracciones validadas.
 
 Archivos permitidos:
-- `hydra/back/src/hydra_api/graph_projection.py`
-- `hydra/back/data/outputs/graph_projection.json`
+- `hydra/backend/src/hydra_api/graph_projection.py`
+- `hydra/backend/data/outputs/graph_projection.json`
 
 Criterios de aceptacion:
 - El JSON incluye nodos, edges y evidencias.
@@ -32,8 +32,8 @@ Dependencias:
 Objetivo: cargar `GraphProjection` en Neo4j como persistencia secundaria.
 
 Archivos permitidos:
-- `hydra/back/src/hydra_api/graph_sinks.py`
-- `hydra/back/.env.example`
+- `hydra/backend/src/hydra_api/graph_sinks.py`
+- `hydra/backend/.env.example`
 - `hydra/docker-compose.yml`
 
 Requisitos:
@@ -58,15 +58,15 @@ Dependencias:
 Objetivo: crear `POST /documents/upload` como entrada alternativa al mismo pipeline de ingesta.
 
 Archivos permitidos:
-- `hydra/back/src/hydra_api/main.py`
-- `hydra/back/src/hydra_api/ingest.py`
-- `hydra/back/src/hydra_api/schemas.py`
+- `hydra/backend/src/hydra_api/main.py`
+- `hydra/backend/src/hydra_api/ingest.py`
+- `hydra/backend/src/hydra_api/schemas.py`
 
 Requisitos:
 - Aceptar archivo + metadatos minimos.
 - Soportar inicialmente `.txt`, `.md` o `.csv`.
 - Rechazar archivos sin metadatos completos.
-- Guardar en `hydra/back/data/raw/` o almacenamiento local equivalente.
+- Guardar en `hydra/backend/data/raw/` o almacenamiento local equivalente.
 - Llamar al mismo servicio de ingesta que usa el corpus local.
 - No ejecutar parsing ni modelos en frontend.
 
@@ -85,7 +85,7 @@ Dependencias:
 Objetivo: crear una UI minima para subir documentos y metadatos.
 
 Archivos permitidos:
-- `hydra/front/**`
+- `hydra/frontend/**`
 
 Requisitos:
 - No contener secretos.

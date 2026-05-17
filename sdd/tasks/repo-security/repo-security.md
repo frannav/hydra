@@ -5,11 +5,11 @@
 Estado: pending  
 Prioridad: must
 
-Objetivo: crear `hydra/front/`, `hydra/back/` y `hydra/sdd/`.
+Objetivo: crear `hydra/frontend/`, `hydra/backend/` y `hydra/sdd/`.
 
 Archivos permitidos:
-- `hydra/front/`
-- `hydra/back/`
+- `hydra/frontend/`
+- `hydra/backend/`
 - `hydra/sdd/`
 
 Criterios de aceptacion:
@@ -28,7 +28,7 @@ Archivos permitidos:
 
 Criterios de aceptacion:
 - `.env` y `.env.*` quedan ignorados.
-- `hydra/.env.example`, `hydra/front/.env.local.example` y `hydra/back/.env.example` no quedan ignorados.
+- `hydra/.env.example`, `hydra/frontend/.env.local.example` y `hydra/backend/.env.example` no quedan ignorados.
 
 ## TASK-REPO-003: Crear env example raiz
 
@@ -49,7 +49,7 @@ Estado: pending
 Prioridad: must
 
 Archivos permitidos:
-- `hydra/back/.env.example`
+- `hydra/backend/.env.example`
 
 Criterios de aceptacion:
 - Incluye API de modelos, Langfuse y `DATABASE_URL` con valores ficticios.
@@ -60,7 +60,7 @@ Estado: pending
 Prioridad: must
 
 Archivos permitidos:
-- `hydra/front/.env.local.example`
+- `hydra/frontend/.env.local.example`
 
 Criterios de aceptacion:
 - Solo incluye `NEXT_PUBLIC_API_BASE_URL`.

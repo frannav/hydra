@@ -197,7 +197,7 @@ Respuesta:
 {
   "run_id": "eval_run_001",
   "total_cases": 1,
-  "results_path": "hydra/back/data/outputs/eval_results.json",
+  "results_path": "hydra/backend/data/outputs/eval_results.json",
   "trace_id": "langfuse-trace-id-or-local-id"
 }
 ```

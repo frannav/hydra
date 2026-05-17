@@ -23,7 +23,7 @@ Este analisis asume:
 - Dedicacion alta: al menos 6-8 horas efectivas por dia.
 - Uso de Python con `uv`, FastAPI, Pydantic, LangChain, PostgreSQL con pgvector y Langfuse Cloud.
 - Uso de `pnpm` obligatorio para el frontend.
-- Frontend y backend en el mismo repositorio, separados en `hydra/front/` y `hydra/back/`.
+- Frontend y backend en el mismo repositorio, separados en `hydra/frontend/` y `hydra/backend/`.
 - Uso de una API de modelos disponible y estable para extraccion, embeddings y generacion. La implementacion debe quedar desacoplada del proveedor concreto mediante variables de entorno.
 - Gestion estricta de secretos: API keys solo en `.env` local, nunca en codigo ni commits.
 - SDD manual en Markdown, sin instalar OpenSpec por ahora, con checklist atomico en `../sdd/08-task-checklist.md`.
@@ -160,10 +160,10 @@ La subida de documentos desde frontend tambien debe considerarse una extension. 
 ### Estructura simple de proyecto
 
 ```text
-hydra/front/
+hydra/frontend/
   package.json
   pnpm-lock.yaml
-hydra/back/
+hydra/backend/
   pyproject.toml
   uv.lock
   data/
@@ -301,7 +301,7 @@ Objetivo: cerrar el nucleo tecnico.
 - Elegir definitivamente el dominio.
 - Reunir 10-15 documentos iniciales.
 - Crear estructura de datos y metadatos.
-- Crear estructura `hydra/front/` y `hydra/back/`.
+- Crear estructura `hydra/frontend/` y `hydra/backend/`.
 - Crear estructura `hydra/sdd/` y checklist de tareas atomicas.
 - Inicializar backend Python con `uv`.
 - Inicializar frontend con `pnpm`.
@@ -390,7 +390,7 @@ Objetivo: margen, no desarrollo principal.
 - resultados persistidos;
 - backend Python con `uv`;
 - frontend con `pnpm`;
-- estructura monorepo `hydra/front/` y `hydra/back/`;
+- estructura monorepo `hydra/frontend/` y `hydra/backend/`;
 - SDD manual en `hydra/sdd/`;
 - checklist SDD atomico;
 - busqueda semantica;
@@ -464,7 +464,7 @@ La defensa deberia apoyarse en cuatro ideas:
 
 Construir el MVP si se acepta este recorte:
 
-> Un sistema web local, con `hydra/front/` y `hydra/back/` en el mismo repositorio, que trabaja sobre 10-20 documentos curados, extrae narrativas y entidades con LLM, valida la salida con Pydantic, permite consultas RAG y genera briefings con evidencias y limitaciones.
+> Un sistema web local, con `hydra/frontend/` y `hydra/backend/` en el mismo repositorio, que trabaja sobre 10-20 documentos curados, extrae narrativas y entidades con LLM, valida la salida con Pydantic, permite consultas RAG y genera briefings con evidencias y limitaciones.
 
 La arquitectura recomendada para ese MVP es FastAPI con `uv`, frontend con `pnpm`, Next.js/Tailwind o HTML/Tailwind si hay que recortar, LangChain, PostgreSQL/pgvector, modelos configurables, Langfuse Cloud y evals propios. Langfuse self-hosted con Docker queda como fallback o trabajo futuro, no como camino principal. No construir todavia scraping, grafo complejo, red social, alertas ni atribucion. Eso se debe presentar como evolucion futura.
 

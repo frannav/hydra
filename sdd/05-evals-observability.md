@@ -27,7 +27,7 @@ Cada consulta debe registrar:
 
 ## Dataset minimo
 
-Crear entre 8 y 12 casos en `hydra/back/data/evals/eval_cases.json`.
+Crear entre 8 y 12 casos en `hydra/backend/data/evals/eval_cases.json`.
 
 Campos:
 
@@ -52,4 +52,4 @@ Campos:
 ## Outputs
 
 - Langfuse Cloud scores si esta disponible.
-- `hydra/back/data/outputs/eval_results.json` como backup local.
+- `hydra/backend/data/outputs/eval_results.json` como backup local.

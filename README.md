@@ -48,8 +48,8 @@ Este repositorio Git está inicializado dentro de la carpeta `hydra/`. Por eso, 
 ```text
 docs/                 Documentación estable del proyecto
 sdd/                  Especificación ejecutable y tareas atómicas
-back/                 Backend FastAPI previsto
-front/                Frontend previsto
+backend/                 Backend FastAPI previsto
+frontend/                Frontend previsto
 docker-compose.yml    PostgreSQL + pgvector previsto
 ```
 

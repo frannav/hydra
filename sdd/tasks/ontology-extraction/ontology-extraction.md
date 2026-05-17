@@ -6,7 +6,7 @@ Estado: pending
 Prioridad: must
 
 Archivos permitidos:
-- `hydra/back/ontology/hydra_ontology.yaml`
+- `hydra/backend/ontology/hydra_ontology.yaml`
 
 ## TASK-ONT-002: Crear loader de ontologia
 
@@ -14,7 +14,7 @@ Estado: pending
 Prioridad: must
 
 Archivos permitidos:
-- `hydra/back/src/hydra_api/ontology.py`
+- `hydra/backend/src/hydra_api/ontology.py`
 
 ## TASK-ONT-003: Validar IDs permitidos
 
@@ -68,8 +68,8 @@ Prioridad: should
 Objetivo: dejar preparado un artefacto intermedio para grafo sin introducir Neo4j como dependencia core.
 
 Archivos permitidos:
-- `hydra/back/src/hydra_api/schemas.py`
-- `hydra/back/src/hydra_api/graph_projection.py`
+- `hydra/backend/src/hydra_api/schemas.py`
+- `hydra/backend/src/hydra_api/graph_projection.py`
 
 Requisitos:
 - Generar `GraphProjection` desde una extraccion Pydantic valida.

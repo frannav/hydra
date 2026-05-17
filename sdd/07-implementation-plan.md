@@ -4,7 +4,7 @@
 
 ### Fase 1: Base tecnica
 
-- Monorepo `hydra/front/` y `hydra/back/`.
+- Monorepo `hydra/frontend/` y `hydra/backend/`.
 - Backend con `uv`.
 - Frontend con `pnpm`.
 - Docker Compose con Postgres + pgvector.
@@ -52,8 +52,8 @@
 
 ## Definition of Done
 
-- `hydra/back/` arranca con `uv`.
-- `hydra/front/` arranca con `pnpm`.
+- `hydra/backend/` arranca con `uv`.
+- `hydra/frontend/` arranca con `pnpm`.
 - PostgreSQL + pgvector arranca con Docker Compose.
 - Hay 10-20 documentos con metadatos completos.
 - Los chunks se insertan en pgvector con embeddings de 4096 dimensiones.
@@ -61,8 +61,8 @@
 - Las extracciones validadas no dependen de pgvector, Neo4j ni frontend.
 - `POST /query` devuelve respuesta, evidencias, documentos recuperados y `trace_id`.
 - `POST /briefing` devuelve briefing con limitaciones.
-- Hay al menos 8 casos en `hydra/back/data/evals/eval_cases.json`.
-- Los evals exportan `hydra/back/data/outputs/eval_results.json`.
+- Hay al menos 8 casos en `hydra/backend/data/evals/eval_cases.json`.
+- Los evals exportan `hydra/backend/data/outputs/eval_results.json`.
 - Las consultas principales se trazan en Langfuse Cloud o logs locales.
 - `.env` no esta versionado y los `.env.example` no contienen secretos.
 - La demo puede ejecutarse siguiendo el README.

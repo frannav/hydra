@@ -6,7 +6,7 @@ Estado: pending
 Prioridad: must
 
 Archivos permitidos:
-- `hydra/back/data/metadata_template.json`
+- `hydra/backend/data/metadata_template.json`
 
 ## TASK-CORPUS-002: Crear lista de candidatos
 
@@ -32,7 +32,7 @@ Estado: pending
 Prioridad: must
 
 Archivos permitidos:
-- `hydra/back/src/hydra_api/ingest.py`
+- `hydra/backend/src/hydra_api/ingest.py`
 
 Requisitos:
 - El loader debe producir `RawDocument` + `DocumentMetadata`.
@@ -50,7 +50,7 @@ Estado: pending
 Prioridad: must
 
 Archivos permitidos:
-- `hydra/back/src/hydra_api/chunking.py`
+- `hydra/backend/src/hydra_api/chunking.py`
 
 ## TASK-CORPUS-007: Guardar chunks con metadatos
 
@@ -68,8 +68,8 @@ Prioridad: must
 Objetivo: separar la fuente de documentos del pipeline de procesamiento.
 
 Archivos permitidos:
-- `hydra/back/src/hydra_api/ingest.py`
-- `hydra/back/src/hydra_api/schemas.py`
+- `hydra/backend/src/hydra_api/ingest.py`
+- `hydra/backend/src/hydra_api/schemas.py`
 
 Requisitos:
 - Exponer una funcion o clase de servicio que acepte `RawDocument` + `DocumentMetadata`.

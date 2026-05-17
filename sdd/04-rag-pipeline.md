@@ -24,7 +24,7 @@ El pipeline no debe depender de una unica fuente de entrada.
 
 Fuentes permitidas:
 
-- `local_corpus`: carpeta curada en `hydra/back/data/raw/` con metadatos.
+- `local_corpus`: carpeta curada en `hydra/backend/data/raw/` con metadatos.
 - `frontend_upload`: extension opcional que envia archivo + metadatos al backend.
 
 Ambas fuentes deben producir el mismo objeto canonico antes de limpiar, trocear o extraer:

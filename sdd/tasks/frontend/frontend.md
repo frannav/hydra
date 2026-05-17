@@ -6,8 +6,8 @@ Estado: pending
 Prioridad: must
 
 Archivos permitidos:
-- `hydra/front/package.json`
-- `hydra/front/pnpm-lock.yaml`
+- `hydra/frontend/package.json`
+- `hydra/frontend/pnpm-lock.yaml`
 
 ## TASK-FRONT-002: Configurar Tailwind
 
