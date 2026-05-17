@@ -2,7 +2,7 @@
 
 ## TASK-REPO-001: Crear estructura base
 
-Estado: pending  
+Estado: done  
 Prioridad: must
 
 Objetivo: crear `hydra/frontend/`, `hydra/backend/` y `hydra/sdd/`.
@@ -18,7 +18,7 @@ Criterios de aceptacion:
 
 ## TASK-REPO-002: Crear gitignore
 
-Estado: pending  
+Estado: done  
 Prioridad: must
 
 Objetivo: proteger `.env` y artefactos locales.
@@ -32,7 +32,7 @@ Criterios de aceptacion:
 
 ## TASK-REPO-003: Crear env example raiz
 
-Estado: pending  
+Estado: done  
 Prioridad: should
 
 Objetivo: documentar variables compartidas por Docker o infraestructura.
@@ -45,7 +45,7 @@ Criterios de aceptacion:
 
 ## TASK-REPO-004: Crear env example backend
 
-Estado: pending  
+Estado: done  
 Prioridad: must
 
 Archivos permitidos:
@@ -56,7 +56,7 @@ Criterios de aceptacion:
 
 ## TASK-REPO-005: Crear env example frontend
 
-Estado: pending  
+Estado: done  
 Prioridad: must
 
 Archivos permitidos:
@@ -68,7 +68,7 @@ Criterios de aceptacion:
 
 ## TASK-REPO-006: Documentar gestion de secretos
 
-Estado: pending  
+Estado: done  
 Prioridad: must
 
 Archivos permitidos:
@@ -79,7 +79,7 @@ Criterios de aceptacion:
 
 ## TASK-REPO-007: Revisar secretos
 
-Estado: pending  
+Estado: done  
 Prioridad: must
 
 Objetivo: verificar antes de publicar.
