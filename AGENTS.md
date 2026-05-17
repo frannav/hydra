@@ -17,7 +17,7 @@ Before changing code or documentation, read only the SDD files relevant to the t
 - `sdd/03-api-contract.md`
 - `sdd/07-implementation-plan.md`
 - `sdd/08-task-checklist.md`
-- `sdd/tasks/<domain>/<domain>.md`
+- `sdd/tasks/<nn-domain>/<nn-domain>.md`
 
 Use `docs/hydra-architecture.md` only when the SDD is not enough.
 `docs/hydra-brainstorming.md` is historical; it is not a source of current decisions.

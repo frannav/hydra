@@ -1,20 +1,20 @@
 # 08 - Task Checklist
 
-Las tareas atomicas estan separadas por dominio en `tasks/`.
+Las tareas atomicas estan separadas por dominio numerado en `tasks/` para que el editor las muestre en orden de ejecucion.
 
 ## Indice
 
-- `tasks/repo-security/repo-security.md`
-- `tasks/backend/backend.md`
-- `tasks/database/database.md`
-- `tasks/corpus/corpus.md`
-- `tasks/ontology-extraction/ontology-extraction.md`
-- `tasks/rag/rag.md`
-- `tasks/council-briefing/council-briefing.md`
-- `tasks/observability-evals/observability-evals.md`
-- `tasks/frontend/frontend.md`
-- `tasks/future-extensions/future-extensions.md`
-- `tasks/documentation/documentation.md`
+- `tasks/00-repo-security/00-repo-security.md`
+- `tasks/01-backend/01-backend.md`
+- `tasks/02-database/02-database.md`
+- `tasks/03-corpus/03-corpus.md`
+- `tasks/04-ontology-extraction/04-ontology-extraction.md`
+- `tasks/05-rag/05-rag.md`
+- `tasks/06-council-briefing/06-council-briefing.md`
+- `tasks/07-observability-evals/07-observability-evals.md`
+- `tasks/08-frontend/08-frontend.md`
+- `tasks/09-documentation/09-documentation.md`
+- `tasks/10-future-extensions/10-future-extensions.md`
 
 ## Flujo de ejecucion
 
@@ -34,7 +34,7 @@ Una tarea solo puede pasar a `done` si:
 
 ## Extensiones futuras
 
-Las tareas de `tasks/future-extensions/future-extensions.md` son `could`. No deben ejecutarse antes de tener funcionando:
+Las tareas de `tasks/10-future-extensions/10-future-extensions.md` son `could`. No deben ejecutarse antes de tener funcionando:
 
 - backend base;
 - corpus local;

@@ -69,7 +69,7 @@ Regla critica: no aprobar una Mission si Droid cambia arquitectura, tecnologias,
 La fuente de verdad es:
 
 - `08-task-checklist.md`
-- `tasks/<domain>/<domain>.md`
+- `tasks/<nn-domain>/<nn-domain>.md`
 
 Reglas:
 
@@ -97,7 +97,7 @@ Context:
 Estamos construyendo HYDRA Espana Lite. Sigue las decisiones de:
 - hydra/docs/hydra-architecture.md
 - hydra/sdd/03-api-contract.md
-- hydra/sdd/tasks/backend/backend.md
+- hydra/sdd/tasks/01-backend/01-backend.md
 
 Scope:
 Implementa solo esta tarea.
@@ -149,7 +149,7 @@ Source of truth:
 - hydra/docs/hydra-architecture.md
 - hydra/sdd/01-architecture-decisions.md
 - hydra/sdd/03-api-contract.md
-- hydra/sdd/tasks/backend/backend.md
+- hydra/sdd/tasks/01-backend/01-backend.md
 
 Non-negotiable decisions:
 - Backend Python con uv.
@@ -211,13 +211,13 @@ No usar Missions para:
 
 | Mission | Milestones | Fuente SDD |
 |---|---|---|
-| Repo setup | seguridad, estructura, env examples | `tasks/repo-security/` |
-| Backend base | uv/FastAPI/config/health/CORS/errors | `tasks/backend/` |
-| DB + corpus | pgvector/tablas/metadata/chunking | `tasks/database/`, `tasks/corpus/` |
-| RAG core | embeddings/retriever/query/evidencias | `tasks/rag/` |
-| Evals + observability | Langfuse/eval cases/scores | `tasks/observability-evals/` |
-| Frontend | layout/vistas/query/evidencias/evals | `tasks/frontend/` |
-| Future extensions | upload frontend, GraphProjection, Neo4j sink | `tasks/future-extensions/` |
+| Repo setup | seguridad, estructura, env examples | `tasks/00-repo-security/` |
+| Backend base | uv/FastAPI/config/health/CORS/errors | `tasks/01-backend/` |
+| DB + corpus | pgvector/tablas/metadata/chunking | `tasks/02-database/`, `tasks/03-corpus/` |
+| RAG core | embeddings/retriever/query/evidencias | `tasks/05-rag/` |
+| Evals + observability | Langfuse/eval cases/scores | `tasks/07-observability-evals/` |
+| Frontend | layout/vistas/query/evidencias/evals | `tasks/08-frontend/` |
+| Future extensions | upload frontend, GraphProjection, Neo4j sink | `tasks/10-future-extensions/` |
 
 Cada Mission debe tener validacion al final de cada milestone.
 

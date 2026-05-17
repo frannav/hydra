@@ -23,5 +23,5 @@ La especificacion ejecutable vive en `../sdd/`.
 - `../sdd/07-implementation-plan.md`: fases, definition of done y verificacion.
 - `../sdd/08-task-checklist.md`: indice de tareas atomicas.
 - `../sdd/09-droid-execution-workflow.md`: procedimiento Codex planner -> Droid/Missions executor -> Codex reviewer.
-- `../sdd/tasks/`: tareas por dominio, organizadas como `../sdd/tasks/<domain>/<domain>.md`.
-- `../sdd/tasks/future-extensions/future-extensions.md`: extensiones opcionales como subida desde frontend y Neo4j como sink secundario.
+- `../sdd/tasks/`: tareas por dominio numerado, organizadas como `../sdd/tasks/<nn-domain>/<nn-domain>.md`.
+- `../sdd/tasks/10-future-extensions/10-future-extensions.md`: extensiones opcionales como subida desde frontend y Neo4j como sink secundario.
