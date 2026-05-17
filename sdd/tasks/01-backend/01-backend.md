@@ -2,7 +2,7 @@
 
 ## TASK-BACK-001: Inicializar backend con uv
 
-Estado: pending  
+Estado: done  
 Prioridad: must
 
 Archivos permitidos:
@@ -14,7 +14,7 @@ Criterios de aceptacion:
 
 ## TASK-BACK-002: Crear paquete hydra_api
 
-Estado: pending  
+Estado: done  
 Prioridad: must
 
 Archivos permitidos:
