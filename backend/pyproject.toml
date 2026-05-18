@@ -5,6 +5,7 @@ description = "HYDRA API backend"
 requires-python = ">=3.12"
 dependencies = [
     "fastapi",
+    "psycopg[binary]",
     "uvicorn[standard]",
     "pydantic",
     "pydantic-settings",
