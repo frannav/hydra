@@ -242,6 +242,17 @@ def validate_extraction_against_ontology(
                 f"Allowed: {sorted(allowed)}"
             )
 
+    # Validate nested Actor.actor_type — allow None and empty actors.
+    for actor in getattr(extraction, "actors", []):
+        actor_type = getattr(actor, "actor_type", None)
+        if actor_type is not None:
+            allowed = allowed_ids(ontology, "actor_types")
+            if actor_type not in allowed:
+                raise ValueError(
+                    f"Unknown nested Actor.actor_type '{actor_type}'. "
+                    f"Allowed: {sorted(allowed)}"
+                )
+
     return extraction
 
 

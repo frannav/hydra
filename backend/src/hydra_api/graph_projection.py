@@ -270,17 +270,10 @@ def build_graph_edges(extraction: Extraction) -> list[GraphEdge]:
                 )
             )
 
-    # Evidence fragments -> Document (SUPPORTED_BY).
-    if doc_node and evidence_refs:
-        for i, ref in enumerate(evidence_refs):
-            edges.append(
-                GraphEdge(
-                    source=ref,
-                    target=doc_node.id,
-                    type="SUPPORTED_BY",
-                    evidence_refs=[ref],
-                )
-            )
+    # Note: SUPPORTED_BY edges are intentionally not created here because
+    # Evidence is not an allowed node type in the SDD. Evidence support is
+    # tracked through each analytical edge's evidence_refs and through
+    # GraphProjection.evidence_refs.
 
     return edges
 

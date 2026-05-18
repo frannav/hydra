@@ -144,9 +144,11 @@ def build_extraction_prompt(
         f"Document text:\n"
         f"{raw_document.text}\n"
         f"\n"
+        f"Controlled vocabularies:\n"
+        f"{ontology_context}\n"
         f"Extract structured information from this document following "
         f"the rules in the system instructions and using the controlled "
-        f"vocabularies from the ontology above."
+        f"vocabularies above."
     )
 
     return [

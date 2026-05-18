@@ -160,7 +160,7 @@ Validar un fixture de extracción (Pydantic + ontología) y exportar:
 cd backend && uv run python -m hydra_api.extraction --validate-json data/fixtures/extraction_valid_minimal.json --ontology ontology/hydra_ontology.yaml --export-dir /tmp/hydra_extraction_cli
 ```
 
-> **No ejecuta modelos**: estos comandos solo validan la estructura
+> **no ejecuta modelos**: estos comandos solo validan la estructura
 > de la ontología y los fixtures sintéticos. La extracción real
 > requiere un corpus aprobado y claves de modelo configuradas.
 

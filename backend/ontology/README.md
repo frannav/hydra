@@ -26,3 +26,6 @@ snake_case formatting, and confirms all required sections are present.
 
 These commands only validate the ontology structure. They do not execute
 any LLM models or make network requests.
+
+> **no ejecuta modelos**: la validación de la ontología y los fixtures
+> no ejecuta modelos ni llama a redes externas.
