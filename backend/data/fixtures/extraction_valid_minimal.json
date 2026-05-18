@@ -1,0 +1,42 @@
+{
+  "document_id": "synth_doc_001",
+  "title": "Informe sobre seguridad regional",
+  "source": "Publicación oficial sintética",
+  "date": "2026-01-15",
+  "main_topic": "Análisis de amenazas regionales",
+  "main_narrative": "El documento describe un incidente aislado sin evidencia de coordinación con otros actores.",
+  "narrative_frame_id": "isolated_incident",
+  "secondary_narratives": [],
+  "actors": [
+    {
+      "name": "Entidad Sintética A",
+      "actor_type": "government_agency"
+    }
+  ],
+  "actor_types": ["government_agency"],
+  "locations": [],
+  "events": [
+    {
+      "description": "Declaración pública sobre medidas de seguridad",
+      "date": "2026-01-10",
+      "location": null
+    }
+  ],
+  "affected_sectors": ["defense", "political_institutions"],
+  "threat_types": ["information_manipulation"],
+  "risk_level": "medio",
+  "confidence": "media",
+  "evidence_fragments": [
+    {
+      "text": "El informe identifica un incidente aislado sin vínculos con otros actores.",
+      "source_document_id": "synth_doc_001",
+      "relevance": "high"
+    }
+  ],
+  "analyst_summary": "Extracción sintética para verificación del pipeline sin corpus real.",
+  "limitations": [
+    "Documento sintético, no representa información real del corpus.",
+    "El análisis se limita al texto proporcionado sin contexto adicional."
+  ],
+  "schema_version": "1.0"
+}

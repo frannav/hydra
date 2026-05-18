@@ -1,0 +1,24 @@
+{
+  "document_id": "synth_doc_invalid",
+  "title": "Documento con ID de ontología desconocido",
+  "source": "Fuente sintética",
+  "date": "2026-02-01",
+  "main_topic": "Tema de prueba",
+  "main_narrative": "Este documento contiene un ID de marco narrativo que no existe en la ontología.",
+  "narrative_frame_id": "nonexistent_frame",
+  "secondary_narratives": [],
+  "actors": [],
+  "actor_types": [],
+  "locations": [],
+  "events": [],
+  "affected_sectors": [],
+  "threat_types": [],
+  "risk_level": "medio",
+  "confidence": "media",
+  "evidence_fragments": [],
+  "analyst_summary": "Fixture sintético diseñado para fallar la validación de ontología.",
+  "limitations": [
+    "Este fixture contiene un narrative_frame_id que no existe en la ontología HYDRA."
+  ],
+  "schema_version": "1.0"
+}
