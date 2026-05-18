@@ -1,0 +1,2 @@
+candidate_id,title,source,source_type,url,published_at,domain,language,include_decision,reason,notes
+placeholder_001,"Documento candidato","Fuente Ejemplo","medio","https://ejemplo.invalid/candidato","2026-01-01","migracion_canarias","es","pending","Por confirmar","Evaluacion pendiente"

@@ -1,0 +1,15 @@
+{
+  "document_id": "doc_placeholder_001",
+  "title": "Titulo del documento",
+  "source": "Nombre de la fuente",
+  "source_type": "medio",
+  "url": "https://ejemplo.invalid/documento",
+  "published_at": "2026-01-01",
+  "collected_at": "2026-01-02",
+  "domain": "migracion_canarias",
+  "language": "es",
+  "ingestion_source": "local_corpus",
+  "raw_path": "backend/data/raw/doc_placeholder_001.txt",
+  "content_hash": "sha256_placeholder_hash",
+  "notes": "Motivo de inclusion en el corpus"
+}
