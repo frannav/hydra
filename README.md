@@ -91,6 +91,58 @@ Orden recomendado:
 11. Documentación y demo
 ```
 
+## Base de datos (PostgreSQL + pgvector)
+
+### Arranque
+
+HYDRA usa PostgreSQL con la extensión pgvector para almacenamiento vectorial.
+El contenedor se inicia con:
+
+```bash
+docker compose up -d postgres
+```
+
+Verificar que el contenedor está en marcha:
+
+```bash
+docker compose ps
+```
+
+### DATABASE_URL
+
+La variable `DATABASE_URL` define la cadena de conexión a PostgreSQL.
+El formato canónico es:
+
+```
+postgresql+psycopg://<usuario>:<contraseña>@<host>:<puerto>/<base_de_datos>
+```
+
+Ejemplo para desarrollo local:
+
+```
+DATABASE_URL=postgresql+psycopg://hydra:hydra@localhost:5432/hydra
+```
+
+> `hydra:hydra` son valores locales/dev, no secretos reales.
+
+El backend normaliza automáticamente el prefijo `postgresql+psycopg://` a `postgresql://`.
+
+### CLI de inicialización
+
+Inicializa el esquema de base de datos (tablas y extensiones):
+
+```bash
+cd backend && DATABASE_URL=postgresql+psycopg://hydra:hydra@localhost:5432/hydra uv run python -m hydra_api.db --init
+```
+
+Imprime las sentencias SQL sin conectar a la base de datos:
+
+```bash
+cd backend && uv run python -m hydra_api.db --print-schema
+```
+
+Ambas operaciones son idempotentes: pueden ejecutarse repetidamente sin error.
+
 ## Seguridad y secretos
 
 Reglas obligatorias:
