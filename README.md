@@ -143,6 +143,18 @@ cd backend && uv run python -m hydra_api.db --print-schema
 
 Ambas operaciones son idempotentes: pueden ejecutarse repetidamente sin error.
 
+## Corpus
+
+HYDRA usa un corpus cerrado de documentos públicos. La ingesta se basa en un archivo de manifiesto:
+
+- `backend/data/metadata/local_corpus.manifest.template.json` — plantilla del manifiesto del corpus local.
+- `backend/data/metadata/metadata_template.json` — plantilla de metadatos por documento.
+- `backend/data/metadata/corpus_candidates.template.csv` — lista de candidatos a incluir en el corpus.
+
+Los documentos reales se agregan manualmente tras aprobación del usuario. No se deben versionar documentos reales en el repositorio.
+
+Para más detalles, ver `backend/data/README.md`.
+
 ## Seguridad y secretos
 
 Reglas obligatorias:

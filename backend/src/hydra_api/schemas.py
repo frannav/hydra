@@ -116,6 +116,37 @@ class DocumentChunk(BaseModel):
 
 
 # ---------------------------------------------------------------------------
+# Ingestion pipeline
+# ---------------------------------------------------------------------------
+
+class RawDocument(BaseModel):
+    """Raw document before cleaning, chunking, or extraction."""
+
+    document_id: str
+    text: str
+    metadata: DocumentMetadata
+
+
+class IngestedDocument(BaseModel):
+    """Normalized document result before persistence."""
+
+    document_id: str
+    metadata: DocumentMetadata
+    content_hash: str
+    raw_path: str | None = None
+    text: str
+
+
+class IngestionRunResult(BaseModel):
+    """Result of an ingestion run."""
+
+    processed_documents: int
+    created_chunks: int
+    errors: list[str] = Field(default_factory=list)
+    dry_run: bool = False
+
+
+# ---------------------------------------------------------------------------
 # Query
 # ---------------------------------------------------------------------------
 
