@@ -2,7 +2,7 @@
 
 ## TASK-BACK-001: Inicializar backend con uv
 
-Estado: done  
+Estado: done
 Prioridad: must
 
 Archivos permitidos:
@@ -14,7 +14,7 @@ Criterios de aceptacion:
 
 ## TASK-BACK-002: Crear paquete hydra_api
 
-Estado: done  
+Estado: done
 Prioridad: must
 
 Archivos permitidos:
@@ -25,7 +25,7 @@ Criterios de aceptacion:
 
 ## TASK-BACK-003: Crear configuracion
 
-Estado: pending  
+Estado: done
 Prioridad: must
 
 Archivos permitidos:
@@ -39,7 +39,7 @@ Requisitos:
 
 ## TASK-BACK-004: Crear main FastAPI
 
-Estado: pending  
+Estado: done
 Prioridad: must
 
 Archivos permitidos:
@@ -50,7 +50,7 @@ Criterios de aceptacion:
 
 ## TASK-BACK-005: Crear healthcheck
 
-Estado: pending  
+Estado: done
 Prioridad: must
 
 Endpoint:
@@ -61,7 +61,7 @@ Criterios de aceptacion:
 
 ## TASK-BACK-006: Configurar CORS
 
-Estado: pending  
+Estado: done
 Prioridad: must
 
 Requisitos:
@@ -70,7 +70,7 @@ Requisitos:
 
 ## TASK-BACK-007: Manejo comun de errores
 
-Estado: pending  
+Estado: done
 Prioridad: must
 
 Requisitos:
@@ -79,7 +79,7 @@ Requisitos:
 
 ## TASK-BACK-008: Logging seguro
 
-Estado: pending  
+Estado: review
 Prioridad: must
 
 Requisitos:
@@ -88,7 +88,7 @@ Requisitos:
 
 ## TASK-BACK-009: Cliente de modelos
 
-Estado: pending  
+Estado: done
 Prioridad: must
 
 Requisitos:
@@ -98,7 +98,7 @@ Requisitos:
 
 ## TASK-BACK-010: Schemas Pydantic base
 
-Estado: pending  
+Estado: done
 Prioridad: must
 
 Archivos permitidos:
