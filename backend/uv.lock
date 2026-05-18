@@ -164,6 +164,7 @@ dependencies = [
     { name = "psycopg", extra = ["binary"] },
     { name = "pydantic" },
     { name = "pydantic-settings" },
+    { name = "pyyaml" },
     { name = "uvicorn", extra = ["standard"] },
 ]
 
@@ -185,6 +186,7 @@ requires-dist = [
     { name = "psycopg", extras = ["binary"] },
     { name = "pydantic" },
     { name = "pydantic-settings" },
+    { name = "pyyaml" },
     { name = "uvicorn", extras = ["standard"] },
 ]
 provides-extras = ["test"]
