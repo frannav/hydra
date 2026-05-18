@@ -38,7 +38,7 @@
 
 ## TASK-DB-001: Crear Docker Compose Postgres
 
-Estado: pending
+Estado: done
 Prioridad: must
 
 Objetivo:
@@ -74,7 +74,7 @@ Comandos de verificacion:
 
 ## TASK-DB-002: Arrancar Postgres local
 
-Estado: pending
+Estado: done
 Prioridad: must
 
 Objetivo:
@@ -102,7 +102,7 @@ Comandos de verificacion:
 
 ## TASK-DB-003: Validar extension pgvector
 
-Estado: pending
+Estado: done
 Prioridad: must
 
 Objetivo:
@@ -128,7 +128,7 @@ Comandos de verificacion:
 
 ## TASK-DB-004: Verificar idempotencia basica de pgvector
 
-Estado: pending
+Estado: done
 Prioridad: must
 
 Objetivo:
@@ -153,7 +153,7 @@ Comandos de verificacion:
 
 ## TASK-DB-005: Anadir dependencia psycopg
 
-Estado: pending
+Estado: done
 Prioridad: must
 
 Objetivo:
@@ -183,7 +183,7 @@ Comandos de verificacion:
 
 ## TASK-DB-006: Crear normalizador de DATABASE_URL
 
-Estado: pending
+Estado: done
 Prioridad: must
 
 Objetivo:
@@ -215,7 +215,7 @@ Comandos de verificacion:
 
 ## TASK-DB-007: Crear redactor seguro de DATABASE_URL
 
-Estado: pending
+Estado: done
 Prioridad: must
 
 Objetivo:
@@ -244,7 +244,7 @@ Comandos de verificacion:
 
 ## TASK-DB-008: Crear helper de conexion lazy
 
-Estado: pending
+Estado: done
 Prioridad: must
 
 Objetivo:
@@ -276,7 +276,7 @@ Comandos de verificacion:
 
 ## TASK-DB-009: Crear modulo de schema SQL base
 
-Estado: pending
+Estado: done
 Prioridad: must
 
 Objetivo:
@@ -306,7 +306,7 @@ Comandos de verificacion:
 
 ## TASK-DB-010: Definir tabla documents
 
-Estado: pending
+Estado: done
 Prioridad: must
 
 Objetivo:
@@ -345,7 +345,7 @@ Comandos de verificacion:
 
 ## TASK-DB-011: Definir tabla document_chunks
 
-Estado: pending
+Estado: done
 Prioridad: must
 
 Objetivo:
@@ -380,7 +380,7 @@ Comandos de verificacion:
 
 ## TASK-DB-012: Definir tabla extractions
 
-Estado: pending
+Estado: done
 Prioridad: must
 
 Objetivo:
@@ -411,7 +411,7 @@ Comandos de verificacion:
 
 ## TASK-DB-013: Definir tabla eval_cases
 
-Estado: pending
+Estado: done
 Prioridad: must
 
 Objetivo:
@@ -443,7 +443,7 @@ Comandos de verificacion:
 
 ## TASK-DB-014: Definir tabla eval_results
 
-Estado: pending
+Estado: done
 Prioridad: must
 
 Objetivo:
@@ -475,7 +475,7 @@ Comandos de verificacion:
 
 ## TASK-DB-015: Definir tabla graph_projection_events
 
-Estado: pending
+Estado: done
 Prioridad: should
 
 Objetivo:
@@ -509,7 +509,7 @@ Comandos de verificacion:
 
 ## TASK-DB-016: Verificar orden del schema SQL
 
-Estado: pending
+Estado: done
 Prioridad: must
 
 Objetivo:
@@ -544,7 +544,7 @@ Comandos de verificacion:
 
 ## TASK-DB-017: Crear inicializador de schema
 
-Estado: pending
+Estado: done
 Prioridad: must
 
 Objetivo:
@@ -577,7 +577,7 @@ Comandos de verificacion:
 
 ## TASK-DB-018: Crear CLI segura para schema DB
 
-Estado: pending
+Estado: done
 Prioridad: must
 
 Objetivo:
@@ -607,7 +607,7 @@ Comandos de verificacion:
 
 ## TASK-DB-019: Ejecutar inicializacion real de DB
 
-Estado: pending
+Estado: done
 Prioridad: must
 
 Objetivo:
@@ -637,7 +637,7 @@ Comandos de verificacion:
 
 ## TASK-DB-020: Verificar tablas en PostgreSQL
 
-Estado: pending
+Estado: done
 Prioridad: must
 
 Objetivo:
@@ -667,7 +667,7 @@ Comandos de verificacion:
 
 ## TASK-DB-021: Documentar DATABASE_URL y comandos DB
 
-Estado: pending
+Estado: done
 Prioridad: must
 
 Objetivo:
