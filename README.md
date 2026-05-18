@@ -143,6 +143,27 @@ cd backend && uv run python -m hydra_api.db --print-schema
 
 Ambas operaciones son idempotentes: pueden ejecutarse repetidamente sin error.
 
+## Ontología y extracción (sin corpus real)
+
+Estos comandos validan la ontología y los fixtures de extracción
+sin ejecutar modelos ni conectar a una base de datos.
+
+Validar la ontología YAML:
+
+```bash
+cd backend && uv run python -m hydra_api.ontology --validate ontology/hydra_ontology.yaml
+```
+
+Validar un fixture de extracción (Pydantic + ontología) y exportar:
+
+```bash
+cd backend && uv run python -m hydra_api.extraction --validate-json data/fixtures/extraction_valid_minimal.json --ontology ontology/hydra_ontology.yaml --export-dir /tmp/hydra_extraction_cli
+```
+
+> **No ejecuta modelos**: estos comandos solo validan la estructura
+> de la ontología y los fixtures sintéticos. La extracción real
+> requiere un corpus aprobado y claves de modelo configuradas.
+
 ## Corpus
 
 HYDRA usa un corpus cerrado de documentos públicos. La ingesta se basa en un archivo de manifiesto:
