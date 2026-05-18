@@ -318,6 +318,23 @@ Recomendacion:
 Si se usa Missions:
 
 - 1 mission por dominio o bloque cohesivo.
+
+## Lecciones aprendidas para nuevas tareas
+
+Cuando una tarea requiera reparaciones, actualizar el SDD antes de repetir el patron.
+
+Checklist para endurecer tareas atomicas:
+
+- Anadir comandos de verificacion que reproduzcan el bug, no solo el happy path.
+- Incluir edge cases observados durante review.
+- Separar cambios documentales en una tarea propia salvo peticion explicita del usuario.
+- Hacer `Allowed files` lo mas cerrado posible.
+- Indicar dependencias nuevas permitidas de forma explicita.
+- Prohibir efectos en import time cuando aplique.
+- Verificar que no aparecen artefactos generados versionados.
+- Verificar `git diff --check`.
+- Confirmar que no hay secretos reales ni logs que expongan claves.
+- Si Droid crea archivos fuera de scope, no aceptarlos hasta que el usuario los apruebe o se cree una tarea especifica.
 - 2-3 milestones maximo por mission para el MVP.
 - Validacion obligatoria por milestone.
 - Pausar la mission si aparece drift.
