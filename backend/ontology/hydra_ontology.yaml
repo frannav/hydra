@@ -1,0 +1,125 @@
+# HYDRA Ontology
+#
+# This file defines the controlled vocabularies for HYDRA.
+# It is a lightweight ontology — a controlled vocabulary, not a factual
+# knowledge base. It does not store facts about documents, actors, or events.
+#
+# All IDs in analytical sections (narrative_frames, actor_types,
+# affected_sectors, threat_types) use snake_case and must be unique.
+
+version: "1.0.0"
+description: >
+  Lightweight ontology for HYDRA defining controlled vocabularies for
+  narrative frames, actor types, affected sectors, threat types, and
+  graph node/edge types.
+language: es
+
+# ---------------------------------------------------------------------------
+# Narrative Frames
+# ---------------------------------------------------------------------------
+# Describes the narrative frame assigned to an extraction.
+# These are analytical categories, not facts about the document.
+narrative_frames:
+  - id: coordinated_campaign
+    label: Coordinated Campaign
+    description: >
+      Evidence of a coordinated effort by multiple actors to advance a shared
+      narrative or objective.
+
+  - id: isolated_incident
+    label: Isolated Incident
+    description: >
+      A single event or statement with no evidence of coordination with other
+      actors or narratives.
+
+  - id: pattern_of_behavior
+    label: Pattern of Behavior
+    description: >
+      Repeated actions or statements by a single actor or organization that
+      suggest a consistent approach or doctrine.
+
+  - id: unknown_or_insufficient_evidence
+    label: Unknown or Insufficient Evidence
+    description: >
+      The available evidence is insufficient to assign a specific narrative
+      frame. This is a valid classification when the document does not provide
+      enough information to determine the narrative context.
+
+# ---------------------------------------------------------------------------
+# Actor Types
+# ---------------------------------------------------------------------------
+# Categories of actors that may appear in extractions.
+# These are type labels, not names of real actors.
+actor_types:
+  - id: government_agency
+    label: Government Agency
+  - id: military_entity
+    label: Military Entity
+  - id: civil_society
+    label: Civil Society Organization
+  - id: media_outlet
+    label: Media Outlet
+  - id: international_organization
+    label: International Organization
+  - id: unknown_or_insufficient_evidence
+    label: Unknown or Insufficient Evidence
+
+# ---------------------------------------------------------------------------
+# Affected Sectors
+# ---------------------------------------------------------------------------
+# Sectors that may be affected by events or threats.
+affected_sectors:
+  - id: defense
+    label: Defense
+  - id: economy
+    label: Economy
+  - id: infrastructure
+    label: Infrastructure
+  - id: public_health
+    label: Public Health
+  - id: political_institutions
+    label: Political Institutions
+  - id: information_space
+    label: Information Space
+
+# ---------------------------------------------------------------------------
+# Threat Types
+# ---------------------------------------------------------------------------
+# Types of threats that may be identified in extractions.
+threat_types:
+  - id: cyber_threat
+    label: Cyber Threat
+  - id: information_manipulation
+    label: Information Manipulation
+  - id: economic_coercion
+    label: Economic Coercion
+  - id: physical_threat
+    label: Physical Threat
+  - id: political_interference
+    label: Political Interference
+  - id: unknown_or_insufficient_evidence
+    label: Unknown or Insufficient Evidence
+
+# ---------------------------------------------------------------------------
+# Graph Node Types
+# ---------------------------------------------------------------------------
+# Allowed node types for the graph projection.
+graph_node_types:
+  - Document
+  - Actor
+  - NarrativeFrame
+  - Location
+  - Event
+  - Sector
+  - ThreatType
+
+# ---------------------------------------------------------------------------
+# Graph Edge Types
+# ---------------------------------------------------------------------------
+# Allowed edge types for the graph projection.
+graph_edge_types:
+  - MENTIONS
+  - HAS_NARRATIVE
+  - OCCURS_IN
+  - AFFECTS
+  - SUPPORTED_BY
