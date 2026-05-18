@@ -1,10 +1,13 @@
 """HYDRA API — FastAPI application."""
 
+from __future__ import annotations
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from hydra_api.errors import HydraError, http_exception_handler, hydra_error_handler
 from hydra_api.logging import setup_logging
+from hydra_api.schemas import QueryRequest, QueryResponse
 
 setup_logging()
 
@@ -28,3 +31,26 @@ app.add_exception_handler(HTTPException, http_exception_handler)
 def healthcheck() -> dict:
     """Health check endpoint."""
     return {"status": "ok", "service": "hydra-api"}
+
+
+@app.post("/query")
+def query(request: QueryRequest) -> QueryResponse:
+    """Answer a question using the RAG pipeline.
+
+    The service is injected via ``app.state.query_service`` for
+    testability.  When not injected, returns a 503 error.
+    """
+    query_service = getattr(app.state, "query_service", None)
+    if query_service is None:
+        raise HTTPException(
+            status_code=503,
+            detail="Query service not configured. Inject via app.state.query_service.",
+        )
+
+    try:
+        return query_service.query(request)
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500,
+            detail="An internal error occurred while processing the query.",
+        )
