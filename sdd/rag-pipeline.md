@@ -1,4 +1,4 @@
-# 04 - RAG Pipeline
+# RAG Pipeline
 
 ## Flujo
 

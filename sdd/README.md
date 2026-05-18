@@ -87,6 +87,14 @@ El flujo detallado para ejecutar tareas con Droid/Qwen 3.6, tanto con task packe
 
 - `09-droid-execution-workflow.md`
 
+## Numeracion de dominios
+
+La numeracion canonica de ejecucion vive en `sdd/tasks/`.
+
+- `04` corresponde a `tasks/04-ontology-extraction/`.
+- `05` corresponde a `tasks/05-rag/`.
+- Los documentos SDD transversales como `rag-pipeline.md`, `evals-observability.md` y `frontend-spec.md` no usan prefijo numerico para evitar colisiones con dominios de tareas.
+
 ## Nomenclatura
 
 ```text

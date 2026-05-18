@@ -12,7 +12,7 @@ Mission 03 is **not accepted yet**. Most nominal checks passed, but the reviewer
 - `hydra/sdd/01-architecture-decisions.md`
 - `hydra/sdd/02-data-model.md`
 - `hydra/sdd/03-api-contract.md`
-- `hydra/sdd/04-rag-pipeline.md`
+- `hydra/sdd/rag-pipeline.md`
 - `hydra/sdd/tasks/03-corpus/03-corpus.md`
 - Existing DB schema in `hydra/backend/src/hydra_api/db_schema.py`
 

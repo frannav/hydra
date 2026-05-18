@@ -17,9 +17,9 @@ La especificacion ejecutable vive en `../sdd/`.
 - `../sdd/01-architecture-decisions.md`: decisiones tecnicas resumidas para ejecucion.
 - `../sdd/02-data-model.md`: metadatos, tablas y esquemas principales.
 - `../sdd/03-api-contract.md`: contrato minimo entre frontend y backend.
-- `../sdd/04-rag-pipeline.md`: pipeline de ingesta, embeddings, retrieval y briefing.
-- `../sdd/05-evals-observability.md`: evals y trazabilidad.
-- `../sdd/06-frontend-spec.md`: vistas y comportamiento de UI.
+- `../sdd/rag-pipeline.md`: pipeline de ingesta, embeddings, retrieval y briefing.
+- `../sdd/evals-observability.md`: evals y trazabilidad.
+- `../sdd/frontend-spec.md`: vistas y comportamiento de UI.
 - `../sdd/07-implementation-plan.md`: fases, definition of done y verificacion.
 - `../sdd/08-task-checklist.md`: indice de tareas atomicas.
 - `../sdd/09-droid-execution-workflow.md`: procedimiento Codex planner -> Droid/Missions executor -> Codex reviewer.

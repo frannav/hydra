@@ -1,4 +1,4 @@
-# 06 - Frontend Spec
+# Frontend Spec
 
 ## Decision
 

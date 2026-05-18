@@ -10,7 +10,7 @@ Source of truth:
 - `hydra/sdd/README.md`
 - `hydra/sdd/01-architecture-decisions.md`
 - `hydra/sdd/02-data-model.md`
-- `hydra/sdd/04-rag-pipeline.md`
+- `hydra/sdd/rag-pipeline.md`
 - `hydra/sdd/07-implementation-plan.md`
 - `hydra/sdd/08-task-checklist.md`
 - `hydra/sdd/09-droid-execution-workflow.md`
