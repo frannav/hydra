@@ -358,6 +358,10 @@ class EvalMetrics(BaseModel):
     precision_at_k: float = 0.0
     json_validity: bool = True
     groundedness: str = "pass"
+    ontology_mapping: bool | None = None
+    coordination_caution: bool | None = None
+    latency_ms: int | None = None
+    cost: float | None = None
 
 
 class EvalResult(BaseModel):
@@ -372,8 +376,16 @@ class EvalResult(BaseModel):
 class EvalRunRequest(BaseModel):
     """Request body for POST /evals/run."""
 
-    case_ids: list[str]
-    top_k: int = 5
+    case_ids: list[str] = Field(
+        ...,
+        min_length=1,
+        description="List of evaluation case IDs to run. Must not be empty.",
+    )
+    top_k: int = Field(
+        default=5,
+        ge=1,
+        description="Number of top results to retrieve. Must be >= 1.",
+    )
 
 
 class EvalRunResponse(BaseModel):
@@ -383,6 +395,7 @@ class EvalRunResponse(BaseModel):
     total_cases: int
     results_path: str
     trace_id: str | None = None
+    results: list[EvalResult] = Field(default_factory=list)
 
 
 class EvalResultsResponse(BaseModel):

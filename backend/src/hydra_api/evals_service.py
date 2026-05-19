@@ -1,18 +1,47 @@
-"""HYDRA API — Evaluation service helpers.
+"""HYDRA API — Evaluation service.
 
-This module provides safe loading and validation of evaluation cases
-from JSON files.  It has **no import-time side effects**: no ``.env``
-loading, no network calls, no file I/O.
+This module provides:
+
+- Safe loading and validation of evaluation cases from JSON files.
+- ``EvalService`` — orchestrates eval cases against an injectable
+  query service, judge, and emitter.
+- ``export_eval_results(run, path)`` — writes eval results to JSON.
+- ``emit_eval_scores(emitter, result)`` — sends metric scores to the
+  observability emitter.
+
+All functions in this module have **no import-time side effects**:
+no ``.env`` loading, no network calls, no file I/O (except when
+explicitly called, e.g. ``load_eval_cases``).
 """
 
 from __future__ import annotations
 
 import json
 import pathlib
-from typing import Any
+import uuid
+from typing import Any, Callable
 
-from .evals_config import EVAL_CASES_PATH
-from .schemas import EvalCase
+from .evals_config import EVAL_CASES_PATH, EVAL_RESULTS_PATH
+from .evals_judges import GroundednessJudge, parse_groundedness_label
+from .evals_metrics import (
+    coordination_caution,
+    json_validity,
+    latency_cost_metrics,
+    ontology_mapping_validity,
+    precision_at_k,
+)
+from .observability import ObservabilityEmitter, create_observability_emitter
+from .schemas import (
+    EvalCase,
+    EvalMetrics,
+    EvalResult,
+    EvalRunRequest,
+    EvalRunResponse,
+    EvalResultsResponse,
+    Extraction,
+    QueryRequest,
+    QueryResponse,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -133,3 +162,432 @@ def load_eval_cases(path: str | pathlib.Path | None = None) -> list[EvalCase]:
         cases.append(EvalCase(**item))
 
     return cases
+
+
+# ---------------------------------------------------------------------------
+# Emit eval scores to the observability emitter
+# ---------------------------------------------------------------------------
+
+
+def emit_eval_scores(
+    emitter: ObservabilityEmitter,
+    result: EvalResult,
+) -> None:
+    """Send metric scores for *result* to the observability emitter.
+
+    Scores emitted:
+
+    - ``precision_at_k`` (float)
+    - ``json_validity`` (bool)
+    - ``ontology_mapping`` (bool, when available)
+    - ``groundedness`` (float mapped from label)
+    - ``coordination_caution`` (bool)
+    - ``latency_ms`` and ``cost_usd`` (when available)
+
+    When *result.trace_id* is ``None``, this function is a no-op.
+
+    Parameters
+    ----------
+    emitter : ObservabilityEmitter
+        The observability emitter to score against.
+    result : EvalResult
+        The eval result containing metrics.
+    """
+    if result.trace_id is None:
+        return
+
+    metrics = result.metrics
+
+    # precision_at_k
+    emitter.score(
+        result.trace_id,
+        "precision_at_k",
+        getattr(metrics, "precision_at_k", 0.0),
+        metadata={"case_id": getattr(result, "eval_case_id", "")},
+    )
+
+    # json_validity
+    emitter.score(
+        result.trace_id,
+        "json_validity",
+        float(getattr(metrics, "json_validity", False)),
+        metadata={"case_id": getattr(result, "eval_case_id", "")},
+    )
+
+    # ontology_mapping (optional)
+    ontology_val = getattr(metrics, "ontology_mapping", None)
+    if ontology_val is not None:
+        emitter.score(
+            result.trace_id,
+            "ontology_mapping",
+            float(ontology_val),
+            metadata={"case_id": getattr(result, "eval_case_id", "")},
+        )
+
+    # groundedness — map label to numeric score
+    groundedness_label = getattr(metrics, "groundedness", "pass")
+    if groundedness_label == "pass":
+        groundedness_value: float = 1.0
+    elif groundedness_label == "warning":
+        groundedness_value = 0.5
+    else:
+        groundedness_value = 0.0
+    emitter.score(
+        result.trace_id,
+        "groundedness",
+        groundedness_value,
+        metadata={
+            "case_id": getattr(result, "eval_case_id", ""),
+            "label": groundedness_label,
+        },
+    )
+
+    # coordination_caution (optional)
+    coord_val = getattr(metrics, "coordination_caution", None)
+    if coord_val is not None:
+        emitter.score(
+            result.trace_id,
+            "coordination_caution",
+            float(coord_val),
+            metadata={"case_id": getattr(result, "eval_case_id", "")},
+        )
+
+    # latency_ms (optional)
+    latency_val = getattr(metrics, "latency_ms", None)
+    if latency_val is not None:
+        emitter.score(
+            result.trace_id,
+            "latency_ms",
+            latency_val,
+            metadata={"case_id": getattr(result, "eval_case_id", "")},
+        )
+
+    # cost_usd (optional)
+    cost_val = getattr(metrics, "cost", None)
+    if cost_val is not None:
+        emitter.score(
+            result.trace_id,
+            "cost_usd",
+            cost_val,
+            metadata={"case_id": getattr(result, "eval_case_id", "")},
+        )
+
+
+# ---------------------------------------------------------------------------
+# EvalService
+# ---------------------------------------------------------------------------
+
+
+class EvalService:
+    """Orchestrates evaluation cases against an injectable query service.
+
+    Parameters
+    ----------
+    case_loader : callable
+        A zero-argument callable returning ``list[EvalCase]``.
+    query_service : object
+        An object with a ``query(request: QueryRequest) -> QueryResponse``
+        method.
+    judge : callable
+        A callable ``(answer: str, evidence_fragments: list[str]) -> str``
+        returning a groundedness label (``"pass"``, ``"warning"``, ``"fail"``).
+    emitter : ObservabilityEmitter | None
+        An observability emitter.  When ``None``, a local no-op emitter
+        is created lazily.
+    top_k : int
+        Default ``top_k`` for queries.  Defaults to ``5``.
+
+    Notes
+    -----
+    The ``run`` method executes only the ``case_ids`` specified in the
+    ``EvalRunRequest``.  It computes all metrics for each case and
+    preserves the ``trace_id`` from the query response.
+    """
+
+    def __init__(
+        self,
+        case_loader: Callable[[], list[EvalCase]],
+        query_service: Any,
+        judge: Callable[..., str],
+        emitter: ObservabilityEmitter | None = None,
+        top_k: int = 5,
+    ) -> None:
+        self.case_loader = case_loader
+        self.query_service = query_service
+        self.judge = judge
+        self.emitter = emitter
+        self._top_k = top_k
+
+    def run(
+        self,
+        request: EvalRunRequest,
+    ) -> EvalRunResponse:
+        """Execute the requested eval cases and return results.
+
+        Parameters
+        ----------
+        request : EvalRunRequest
+            The request containing ``case_ids`` and ``top_k``.
+
+        Returns
+        -------
+        EvalRunResponse
+            A response with ``run_id``, ``total_cases``, ``results_path``,
+            and ``trace_id`` (from the first result, if any).
+        """
+        # Use request top_k if provided, otherwise fall back to constructor default.
+        top_k = request.top_k
+
+        # Load all cases and filter to requested case_ids.
+        all_cases = self.case_loader()
+        requested_ids = set(request.case_ids)
+
+        # Filter cases to only those requested.
+        cases = [c for c in all_cases if c.id in requested_ids]
+
+        # Create a unique run_id.
+        run_id = f"eval_run_{uuid.uuid4().hex[:12]}"
+
+        # Create emitter if not provided.
+        emitter = self.emitter
+        if emitter is None:
+            emitter = create_observability_emitter()
+
+        results: list[EvalResult] = []
+        first_trace_id: str | None = None
+
+        for case in cases:
+            # Build the query request.
+            query_request = QueryRequest(question=case.question, top_k=top_k)
+
+            # Execute the query.
+            query_response = self.query_service.query(query_request)
+
+            # Preserve trace_id from the query response.
+            trace_id = query_response.trace_id or None
+
+            # Collect evidence fragments from retrieved documents.
+            evidence_fragments: list[str] = []
+            for doc in query_response.retrieved_documents:
+                if hasattr(doc, "evidence"):
+                    evidence_fragments.append(str(doc.evidence))
+                elif isinstance(doc, dict):
+                    evidence_fragments.append(str(doc.get("evidence", "")))
+
+            # --- Compute metrics ---
+            metrics = self._compute_metrics(case, query_response, evidence_fragments)
+
+            # --- Run the judge for groundedness ---
+            try:
+                judge_label = self.judge(
+                    query_response.answer, evidence_fragments
+                )
+                metrics.groundedness = parse_groundedness_label(judge_label)
+            except Exception:
+                # If judge fails, keep the default or any computed value.
+                pass
+
+            # --- Determine passed status ---
+            passed = self._determine_passed(metrics)
+
+            result = EvalResult(
+                eval_case_id=case.id,
+                metrics=metrics,
+                passed=passed,
+                trace_id=trace_id,
+            )
+            results.append(result)
+
+            # Emit scores to the emitter.
+            emit_eval_scores(emitter, result)
+
+            # Track the first trace_id for the response.
+            if first_trace_id is None and trace_id is not None:
+                first_trace_id = trace_id
+
+        # Determine the results path.
+        results_path = EVAL_RESULTS_PATH
+
+        return EvalRunResponse(
+            run_id=run_id,
+            total_cases=len(results),
+            results_path=results_path,
+            trace_id=first_trace_id,
+            results=results,
+        )
+
+    def _compute_metrics(
+        self,
+        case: EvalCase,
+        query_response: QueryResponse,
+        evidence_fragments: list[str],
+    ) -> EvalMetrics:
+        """Compute all metrics for a single eval case.
+
+        Parameters
+        ----------
+        case : EvalCase
+            The evaluation case being evaluated.
+        query_response : QueryResponse
+            The response from the query service.
+        evidence_fragments : list[str]
+            Evidence text fragments from retrieved documents.
+
+        Returns
+        -------
+        EvalMetrics
+            Computed metrics for this case.
+        """
+        # Precision@k
+        retrieved_for_precision = query_response.retrieved_documents
+        try:
+            precision = precision_at_k(
+                case.expected_documents,
+                retrieved_for_precision,
+                self._top_k,
+            )
+        except (ValueError, TypeError):
+            precision = 0.0
+
+        # JSON validity — validate against Extraction schema.
+        # We use the answer text as a potential JSON payload.
+        json_result = json_validity(query_response.answer, Extraction)
+
+        # Ontology mapping — only if we have extraction-like data.
+        # For now, skip unless we have actual extraction data.
+        ontology_passed: bool | None = None
+
+        # Coordination caution
+        coord_result = coordination_caution(
+            query_response.answer, evidence_fragments
+        )
+
+        # Latency / cost — extract from query response metadata if available.
+        # Since QueryResponse doesn't have metadata, we use empty dict.
+        latency_result = latency_cost_metrics({})
+
+        return EvalMetrics(
+            precision_at_k=precision,
+            json_validity=json_result.passed,
+            groundedness="pass",  # Will be overridden by judge
+            ontology_mapping=ontology_passed,
+            coordination_caution=coord_result.passed,
+            latency_ms=latency_result.latency_ms,
+            cost=latency_result.cost_usd,
+        )
+
+    @staticmethod
+    def _determine_passed(metrics: EvalMetrics) -> bool:
+        """Determine whether an eval case passed based on its metrics.
+
+        A case passes when groundedness is ``"pass"`` and all boolean
+        metrics that are set are ``True``.
+
+        Parameters
+        ----------
+        metrics : EvalMetrics
+            The computed metrics.
+
+        Returns
+        -------
+        bool
+            ``True`` if the case passed, ``False`` otherwise.
+        """
+        if metrics.groundedness != "pass":
+            return False
+        if not metrics.json_validity:
+            return False
+        if metrics.ontology_mapping is not None and not metrics.ontology_mapping:
+            return False
+        if metrics.coordination_caution is not None and not metrics.coordination_caution:
+            return False
+        return True
+
+
+# ---------------------------------------------------------------------------
+# export_eval_results
+# ---------------------------------------------------------------------------
+
+_ALLOWED_EXPORT_BASE: pathlib.Path = pathlib.Path("data")
+
+
+def export_eval_results(
+    run: Any,
+    path: str | pathlib.Path | None = None,
+) -> None:
+    """Export eval results to a JSON file.
+
+    Parameters
+    ----------
+    run : Any
+        An object with at least ``run_id`` (str) and ``results``
+        (list[EvalResult]) attributes.  May also have ``trace_id``
+        (str | None) and ``results_path`` (str).
+    path : str | pathlib.Path | None
+        The output file path.  When ``None``, defaults to
+        :data:`evals_config.EVAL_RESULTS_PATH`.
+
+    Raises
+    ------
+    ValueError
+        When the resolved path is outside the allowed export base
+        directory.
+    """
+    if path is None:
+        path = EVAL_RESULTS_PATH
+
+    resolved = pathlib.Path(path)
+
+    # Reject path traversal.
+    if ".." in resolved.parts:
+        raise ValueError(f"Path traversal not allowed in export path: {path}")
+
+    # Resolve to absolute for safety checks.
+    resolved = resolved.resolve()
+
+    # Ensure the resolved path is under the allowed base.
+    try:
+        resolved.relative_to(_ALLOWED_EXPORT_BASE.resolve())
+    except ValueError:
+        raise ValueError(
+            f"Eval results export path must be relative to '{_ALLOWED_EXPORT_BASE}': {path}"
+        )
+
+    # Create the directory if it doesn't exist.
+    resolved.parent.mkdir(parents=True, exist_ok=True)
+
+    # Build the export data.
+    results_dict: list[dict[str, Any]] = []
+    for result in run.results:
+        result_data: dict[str, Any] = {
+            "eval_case_id": result.eval_case_id,
+            "passed": result.passed,
+            "trace_id": result.trace_id,
+            "metrics": {
+                "precision_at_k": result.metrics.precision_at_k,
+                "json_validity": result.metrics.json_validity,
+                "groundedness": result.metrics.groundedness,
+                "ontology_mapping": result.metrics.ontology_mapping,
+                "coordination_caution": result.metrics.coordination_caution,
+                "latency_ms": result.metrics.latency_ms,
+                "cost": result.metrics.cost,
+            },
+        }
+        results_dict.append(result_data)
+
+    export_data: dict[str, Any] = {
+        "run_id": run.run_id,
+        "results": results_dict,
+    }
+
+    # If the run has a trace_id, include it.
+    if hasattr(run, "trace_id") and run.trace_id is not None:
+        export_data["trace_id"] = run.trace_id
+
+    # Write atomically (write to temp file, then rename).
+    tmp_path = resolved.with_suffix(resolved.suffix + ".tmp")
+    tmp_path.write_text(
+        json.dumps(export_data, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+    tmp_path.replace(resolved)

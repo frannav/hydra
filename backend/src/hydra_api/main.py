@@ -7,7 +7,15 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from hydra_api.errors import HydraError, http_exception_handler, hydra_error_handler
 from hydra_api.logging import setup_logging
-from hydra_api.schemas import BriefingRequest, BriefingResponse, QueryRequest, QueryResponse
+from hydra_api.schemas import (
+    BriefingRequest,
+    BriefingResponse,
+    EvalRunRequest,
+    EvalRunResponse,
+    EvalResultsResponse,
+    QueryRequest,
+    QueryResponse,
+)
 
 setup_logging()
 
@@ -89,3 +97,85 @@ def briefing(request: BriefingRequest) -> BriefingResponse:
             status_code=500,
             detail="An internal error occurred while building the briefing.",
         )
+
+
+@app.post("/evals/run", response_model=EvalRunResponse)
+def evals_run(request: EvalRunRequest) -> EvalRunResponse:
+    """Run evaluation cases.
+
+    The service is injected via ``app.state.eval_service`` for
+    testability.  When not injected, returns a safe error.
+
+    Errors are surfaced with a generic message — no stack traces
+    or internal details are exposed to the client.
+    """
+    eval_service = getattr(app.state, "eval_service", None)
+    try:
+        if eval_service is None:
+            raise HTTPException(
+                status_code=500,
+                detail="Eval service is not configured.",
+            )
+        return eval_service.run(request)
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(
+            status_code=500,
+            detail="An internal error occurred while running evals.",
+        )
+
+
+@app.get("/evals/results", response_model=EvalResultsResponse)
+def evals_results() -> EvalResultsResponse:
+    """Return the last exported eval results.
+
+    Reads the last exported ``eval_results.json`` from disk.
+    When no results file exists, returns an empty response.
+
+    Errors are surfaced with a generic message — no stack traces
+    or internal details are exposed to the client.
+    """
+    from hydra_api.evals_config import EVAL_RESULTS_PATH
+
+    try:
+        import json
+        import pathlib
+
+        results_path = pathlib.Path(EVAL_RESULTS_PATH)
+        if not results_path.exists():
+            return EvalResultsResponse(run_id="", results=[])
+
+        text = results_path.read_text(encoding="utf-8")
+        data = json.loads(text)
+
+        run_id = data.get("run_id", "")
+        results_data = data.get("results", [])
+
+        # Reconstruct EvalResult objects from dicts.
+        from hydra_api.schemas import EvalMetrics, EvalResult
+
+        results = []
+        for r in results_data:
+            metrics_data = r.get("metrics", {})
+            metrics = EvalMetrics(
+                precision_at_k=metrics_data.get("precision_at_k", 0.0),
+                json_validity=metrics_data.get("json_validity", True),
+                groundedness=metrics_data.get("groundedness", "pass"),
+                ontology_mapping=metrics_data.get("ontology_mapping"),
+                coordination_caution=metrics_data.get("coordination_caution"),
+                latency_ms=metrics_data.get("latency_ms"),
+                cost=metrics_data.get("cost"),
+            )
+            results.append(
+                EvalResult(
+                    eval_case_id=r.get("eval_case_id", ""),
+                    metrics=metrics,
+                    passed=r.get("passed", True),
+                    trace_id=r.get("trace_id"),
+                )
+            )
+
+        return EvalResultsResponse(run_id=run_id, results=results)
+    except Exception:
+        return EvalResultsResponse(run_id="", results=[])
