@@ -164,3 +164,99 @@ def build_briefing_draft(
 
     lines.append("")
     return "\n".join(lines)
+
+
+# ---------------------------------------------------------------------------
+# BriefingService
+# ---------------------------------------------------------------------------
+
+
+class BriefingService:
+    """Orchestrates QueryService + CouncilService for the briefing pipeline.
+
+    All dependencies are injected at construction time, which makes the
+    class fully testable without any real LLM or DB calls.
+
+    Parameters
+    ----------
+    query_service : object
+        An object with a ``query(request: BriefingRequest) -> QueryResponse``
+        method.  Reuses the same ``QueryService`` that powers ``POST /query``.
+    council_service : object or None
+        An object with a ``run(question, retrieved_documents)`` method that
+        returns an object with ``briefing_markdown``, ``risk_level``, and
+        ``council_review`` attributes.  When ``None``, the council path is
+        skipped.
+    """
+
+    def __init__(
+        self,
+        query_service: Any,
+        council_service: Any | None = None,
+    ) -> None:
+        self.query_service = query_service
+        self.council_service = council_service
+
+    def brief(self, request: BriefingRequest) -> BriefingResponse:
+        """Execute the full briefing pipeline.
+
+        Data flow:
+          1. Call ``query_service.query(request)`` → ``QueryResponse``
+          2. If no retrieved documents → no-context path
+          3. If documents and ``use_council=True`` → draft + council
+          4. If documents and ``use_council=False`` → draft only
+
+        The ``trace_id`` from the ``QueryResponse`` is preserved in the
+        final ``BriefingResponse``.
+
+        Parameters
+        ----------
+        request : BriefingRequest
+            The validated briefing request.
+
+        Returns
+        -------
+        BriefingResponse
+            The final briefing with markdown, risk level, council review,
+            and trace id.
+        """
+        # Step 1: retrieve documents and answer via QueryService.
+        query_response: QueryResponse = self.query_service.query(request)
+
+        retrieved = query_response.retrieved_documents
+        trace_id = query_response.trace_id
+
+        # Step 2: No documents → no-context path (skips council and models).
+        if not retrieved:
+            return build_no_context_briefing_response(
+                request.question,
+                trace_id,
+                use_council=request.use_council,
+            )
+
+        # Step 3: With documents.
+        if request.use_council and self.council_service is not None:
+            # Council path: build draft, run council, use council result.
+            draft = build_briefing_draft(request.question, query_response)
+
+            council_result = self.council_service.run(
+                request.question,
+                retrieved,
+            )
+
+            return BriefingResponse(
+                briefing_markdown=council_result.briefing_markdown,
+                risk_level=council_result.risk_level,
+                council_review=council_result.council_review,
+                trace_id=trace_id,
+            )
+
+        # No-council path: use draft directly.
+        draft = build_briefing_draft(request.question, query_response)
+
+        return BriefingResponse(
+            briefing_markdown=draft,
+            risk_level=RiskLevel.medio,
+            council_review=None,
+            trace_id=trace_id,
+        )
