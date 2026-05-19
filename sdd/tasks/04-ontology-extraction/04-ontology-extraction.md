@@ -40,6 +40,46 @@ Las tareas que requieren documentos reales o llamadas reales a modelos quedan bl
 - Mantener la ontologia como vocabulario ligero, no como una base de conocimiento.
 - La proyeccion de grafo es un artefacto derivado de extracciones validadas; Neo4j es solo sink futuro.
 - El prompt debe incluir reglas de prudencia analitica y prohibir coordinacion sin evidencia.
+- Alinear SQL con `backend/src/hydra_api/db_schema.py`; no inventar columnas ni nombres de PK.
+- No aceptar silenciosamente JSON/YAML con forma incorrecta: root debe ser objeto cuando el helper espere objeto.
+- No resetear estados ni sobrescribir artefactos validados sin que la tarea lo pida.
+- Los errores seguros no deben incluir payloads completos, prompts completos, salidas LLM completas, secretos ni fragmentos largos.
+- La documentacion debe apuntar a comandos y secciones existentes.
+
+## Errores probables a evitar
+
+- Convertir la ontologia en una KB factual con actores reales o hechos del corpus.
+- Usar `yaml.load` en vez de `yaml.safe_load`.
+- Leer archivos, abrir conexiones, crear clientes LLM o cargar ontologia en import time.
+- Llamar modelos reales desde verificaciones o fixtures.
+- Aceptar markdown fenced JSON como si fuera JSON puro cuando el parser todavia no lo soporta.
+- Persistir prompts, salidas LLM invalidas o errores con contenido sensible.
+- Insertar en columnas inexistentes de `extractions` o construir SQL con f-strings de payloads.
+- Crear edges de grafo sin `evidence_refs` o inferir coordinacion/atribucion.
+- Anadir dependencias de Neo4j, embeddings, LangChain/RAG o frontend en esta mission.
+- Modificar SDD/statuses desde Droid.
+
+## Edge cases obligatorios
+
+- Ontologia YAML vacia o cuyo root no sea objeto debe fallar.
+- IDs duplicados o no `snake_case` en vocabularios analiticos deben fallar.
+- Seccion de ontologia desconocida debe fallar en `allowed_ids`.
+- `narrative_frame_id=None` y listas controladas vacias deben ser validos.
+- ID controlado desconocido en una extraccion debe fallar.
+- JSON vacio, JSON invalido, root JSON no objeto y markdown fenced JSON deben fallar.
+- Fixture invalido no debe exportarse como artefacto canonico.
+- Servicio sin `model_client` debe poder validar fixtures sin red.
+- Extraccion sin evidencias debe producir cero edges.
+- Extraccion con evidencias solo puede producir edges con `evidence_refs`.
+
+## Stop conditions generales
+
+- La tarea necesita cambiar schemas canonicos o contrato API.
+- La tarea necesita documentos reales, corpus aprobado o claves reales.
+- La tarea necesita llamar un proveedor LLM, embeddings, Langfuse o red externa.
+- La tarea necesita tocar frontend, docs historicos, `.env` reales o archivos fuera de scope.
+- La tarea necesita modificar DB schema fuera de lo ya definido en `TASK-DB-*`.
+- La verificacion no puede ejecutarse sin datos o servicios que no existen.
 
 ## Milestones sugeridos para Droid Missions
 
@@ -291,12 +331,15 @@ Requisitos:
 - Rechazar archivo vacio.
 - Rechazar root que no sea objeto/dict.
 - No hacer fallback silencioso.
+- No resolver rutas magicas ni usar una ruta hardcodeada.
 
 Criterios de aceptacion:
 - Carga `backend/ontology/hydra_ontology.yaml`.
 
 Comandos de verificacion:
 - `cd hydra/backend && uv run python -c "from pathlib import Path; from hydra_api.ontology import load_ontology; data=load_ontology(Path('ontology/hydra_ontology.yaml')); assert isinstance(data, dict); print('ontology load ok')"`
+- `cd hydra/backend && ! uv run python -c "from pathlib import Path; p=Path('/tmp/hydra_empty_ontology.yaml'); p.write_text('', encoding='utf-8'); from hydra_api.ontology import load_ontology; load_ontology(p)" && echo "empty ontology rejected"`
+- `cd hydra/backend && ! uv run python -c "from pathlib import Path; p=Path('/tmp/hydra_list_ontology.yaml'); p.write_text('- item\\n', encoding='utf-8'); from hydra_api.ontology import load_ontology; load_ontology(p)" && echo "non-object ontology rejected"`
 
 ## TASK-ONT-009: Validar estructura de ontologia
 
@@ -319,9 +362,12 @@ Requisitos:
   - `actor_types`
   - `affected_sectors`
   - `threat_types`
-- Validar que cada item tiene `id`.
-- Validar IDs unicos por seccion.
-- Validar IDs `snake_case` para vocabularios analiticos.
+  - `graph_node_types`
+  - `graph_edge_types`
+- En secciones de objetos, validar que cada item tiene `id`.
+- En secciones de objetos, validar IDs unicos por seccion.
+- En secciones de objetos, validar IDs `snake_case` para vocabularios analiticos.
+- Validar que `graph_node_types` y `graph_edge_types` son listas no vacias de strings.
 - Devolver el mismo dict si es valido.
 
 Criterios de aceptacion:
@@ -330,7 +376,8 @@ Criterios de aceptacion:
 
 Comandos de verificacion:
 - `cd hydra/backend && uv run python -c "from pathlib import Path; from hydra_api.ontology import load_ontology, validate_ontology; data=validate_ontology(load_ontology(Path('ontology/hydra_ontology.yaml'))); assert data['narrative_frames']; print('ontology validate ok')"`
-- `cd hydra/backend && ! uv run python -c "from hydra_api.ontology import validate_ontology; validate_ontology({'narrative_frames':[{'id':'a'},{'id':'a'}], 'actor_types':[], 'affected_sectors':[], 'threat_types':[]})" && echo "duplicate ontology ids rejected"`
+- `cd hydra/backend && ! uv run python -c "from hydra_api.ontology import validate_ontology; validate_ontology({'narrative_frames':[{'id':'a'},{'id':'a'}], 'actor_types':[], 'affected_sectors':[], 'threat_types':[], 'graph_node_types':['Document'], 'graph_edge_types':['SUPPORTED_BY']})" && echo "duplicate ontology ids rejected"`
+- `cd hydra/backend && ! uv run python -c "from hydra_api.ontology import validate_ontology; validate_ontology({'narrative_frames':[{'id':'Bad-ID'}], 'actor_types':[], 'affected_sectors':[], 'threat_types':[], 'graph_node_types':['Document'], 'graph_edge_types':['SUPPORTED_BY']})" && echo "bad ontology id rejected"`
 
 ## TASK-ONT-010: Obtener IDs permitidos por seccion
 
@@ -351,12 +398,14 @@ Requisitos:
 - Fallar si la seccion no existe.
 - Devolver set de IDs.
 - No modificar la ontologia.
+- Rechazar secciones cuyo formato no sea lista de objetos con `id`.
 
 Criterios de aceptacion:
 - Funciona para `narrative_frames`.
 
 Comandos de verificacion:
 - `cd hydra/backend && uv run python -c "from pathlib import Path; from hydra_api.ontology import load_ontology, validate_ontology, allowed_ids; data=validate_ontology(load_ontology(Path('ontology/hydra_ontology.yaml'))); ids=allowed_ids(data,'narrative_frames'); assert ids; print('allowed ids ok')"`
+- `cd hydra/backend && ! uv run python -c "from pathlib import Path; from hydra_api.ontology import load_ontology, validate_ontology, allowed_ids; data=validate_ontology(load_ontology(Path('ontology/hydra_ontology.yaml'))); allowed_ids(data,'missing_section')" && echo "missing section rejected"`
 
 ## TASK-ONT-011: Validar IDs controlados de una extraccion
 
@@ -380,6 +429,7 @@ Requisitos:
   - `actor_types` contra `actor_types`
   - `affected_sectors` contra `affected_sectors`
   - `threat_types` contra `threat_types`
+- Permitir `narrative_frame_id=None`.
 - Permitir listas vacias.
 - Fallar con mensaje claro y seguro si hay ID desconocido.
 
@@ -389,6 +439,7 @@ Criterios de aceptacion:
 
 Comandos de verificacion:
 - `cd hydra/backend && uv run python -c "from pathlib import Path; from hydra_api.schemas import Extraction; from hydra_api.ontology import load_ontology, validate_ontology, validate_extraction_against_ontology, allowed_ids; ont=validate_ontology(load_ontology(Path('ontology/hydra_ontology.yaml'))); frame=next(iter(allowed_ids(ont,'narrative_frames'))); e=Extraction(document_id='d', title='T', source='S', narrative_frame_id=frame); assert validate_extraction_against_ontology(e, ont) is e; print('extraction ontology valid ok')"`
+- `cd hydra/backend && uv run python -c "from pathlib import Path; from hydra_api.schemas import Extraction; from hydra_api.ontology import load_ontology, validate_ontology, validate_extraction_against_ontology; ont=validate_ontology(load_ontology(Path('ontology/hydra_ontology.yaml'))); e=Extraction(document_id='d', title='T', source='S'); assert validate_extraction_against_ontology(e, ont) is e; print('empty controlled ids ok')"`
 - `cd hydra/backend && ! uv run python -c "from pathlib import Path; from hydra_api.schemas import Extraction; from hydra_api.ontology import load_ontology, validate_ontology, validate_extraction_against_ontology; ont=validate_ontology(load_ontology(Path('ontology/hydra_ontology.yaml'))); validate_extraction_against_ontology(Extraction(document_id='d', title='T', source='S', narrative_frame_id='not_allowed'), ont)" && echo "unknown extraction id rejected"`
 
 ## TASK-ONT-012: Crear CLI de validacion de ontologia
@@ -550,6 +601,7 @@ Requisitos:
 - Crear `parse_extraction_json(text: str) -> dict`.
 - Aceptar JSON puro.
 - Rechazar string vacio.
+- Rechazar root JSON que no sea objeto/dict.
 - Rechazar markdown con texto fuera del JSON por ahora.
 - No ejecutar codigo.
 
@@ -559,6 +611,7 @@ Criterios de aceptacion:
 
 Comandos de verificacion:
 - `cd hydra/backend && uv run python -c "from hydra_api.extraction import parse_extraction_json; assert parse_extraction_json('{\"document_id\":\"d\"}')['document_id']=='d'; print('parse json ok')"`
+- `cd hydra/backend && ! uv run python -c "from hydra_api.extraction import parse_extraction_json; parse_extraction_json('[1,2,3]')" && echo "json list root rejected"`
 - `cd hydra/backend && ! uv run python -c "from hydra_api.extraction import parse_extraction_json; parse_extraction_json(chr(96)*3 + 'json {} ' + chr(96)*3)" && echo "markdown wrapper rejected"`
 
 ## TASK-EXT-006: Validar JSON como Extraction Pydantic
@@ -580,6 +633,7 @@ Requisitos:
 - Usar schema `Extraction`.
 - Requerir `document_id`, `title` y `source`.
 - No modificar vocabularios controlados en esta tarea.
+- Rechazar payloads que no sean dict con `ValueError` seguro.
 
 Criterios de aceptacion:
 - Payload minimo valido pasa.
@@ -587,6 +641,7 @@ Criterios de aceptacion:
 
 Comandos de verificacion:
 - `cd hydra/backend && uv run python -c "from hydra_api.extraction import validate_extraction_payload; e=validate_extraction_payload({'document_id':'d','title':'T','source':'S'}); assert e.document_id=='d'; print('validate extraction ok')"`
+- `cd hydra/backend && ! uv run python -c "from hydra_api.extraction import validate_extraction_payload; validate_extraction_payload(['not','dict'])" && echo "non-dict payload rejected"`
 - `cd hydra/backend && ! uv run python -c "from hydra_api.extraction import validate_extraction_payload; validate_extraction_payload({'title':'T','source':'S'})" && echo "missing document_id rejected"`
 
 ## TASK-EXT-007: Validar extraccion contra ontologia
@@ -636,6 +691,8 @@ Requisitos:
 - Crear fixture valido minimo.
 - Crear fixture invalido con ID controlado desconocido.
 - Usar contenido sintetico claramente no perteneciente al corpus real.
+- Incluir al menos un `evidence_fragments` sintetico en el fixture valido para probar GraphProjection con evidencia.
+- Incluir `limitations` en el fixture valido.
 - No incluir URLs reales.
 
 Criterios de aceptacion:
@@ -696,12 +753,13 @@ Requisitos:
 - No incluir prompt completo.
 - No incluir salida LLM completa.
 - Incluir solo tipo de fallo y mensaje corto.
+- No devolver tokens de prueba, payloads largos ni el texto completo de la excepcion original.
 
 Criterios de aceptacion:
 - Error seguro no contiene payload completo.
 
 Comandos de verificacion:
-- `cd hydra/backend && uv run python -c "from hydra_api.extraction import safe_extraction_error; msg=safe_extraction_error(ValueError('secret payload abcdef')); assert 'abcdef' not in msg or len(msg) < 120; print('safe extraction error ok')"`
+- `cd hydra/backend && uv run python -c "from hydra_api.extraction import safe_extraction_error; msg=safe_extraction_error(ValueError('secret payload abcdef')); assert 'abcdef' not in msg and 'secret payload' not in msg and len(msg) < 120; print('safe extraction error ok')"`
 
 ## TASK-EXT-011: Persistir extraccion validada en PostgreSQL
 
@@ -722,10 +780,14 @@ Requisitos:
 - Crear `save_extraction(conn, extraction: Extraction) -> None`.
 - Usar SQL parametrizado.
 - Insertar en tabla `extractions`.
+- Alinear columnas con `backend/src/hydra_api/db_schema.py`: `id`, `document_id`, `extraction_json`, `schema_version`.
+- Generar `id` determinista a partir de `document_id` y `schema_version`, por ejemplo `document_id_extraction_schema_version`.
+- Usar `ON CONFLICT (id)` para actualizar solo `extraction_json` y `schema_version`.
 - Guardar `extraction_json` como JSONB.
 - No guardar prompts.
 - No guardar respuestas LLM invalidas.
 - No abrir conexion en import time.
+- No construir SQL con f-strings de valores de usuario.
 
 Criterios de aceptacion:
 - Funcion importable.
@@ -733,6 +795,7 @@ Criterios de aceptacion:
 
 Comandos de verificacion:
 - `cd hydra/backend && uv run python -c "from hydra_api.extraction import save_extraction; print(callable(save_extraction))"`
+- `cd hydra/backend && uv run python -c "import inspect; from hydra_api import extraction; src=inspect.getsource(extraction.save_extraction); assert 'INSERT INTO extractions (id, document_id, extraction_json, schema_version)' in src; assert 'ON CONFLICT (id)' in src; assert '%s' in src or '%(' in src; print('extraction sql schema ok')"`
 
 ## TASK-EXT-012: Exportar extraccion validada a JSON local
 
@@ -782,6 +845,7 @@ Requisitos:
 - Soportar `--export-dir`.
 - No llamar modelos.
 - No conectar a DB.
+- Si la validacion falla, salir con codigo distinto de cero y no exportar artefacto.
 
 Criterios de aceptacion:
 - Valida fixture.
@@ -790,6 +854,7 @@ Criterios de aceptacion:
 Comandos de verificacion:
 - `cd hydra/backend && uv run python -m hydra_api.extraction --help`
 - `cd hydra/backend && uv run python -m hydra_api.extraction --validate-json data/fixtures/extraction_valid_minimal.json --ontology ontology/hydra_ontology.yaml --export-dir /tmp/hydra_extraction_cli`
+- `cd hydra/backend && ! uv run python -m hydra_api.extraction --validate-json data/fixtures/extraction_invalid_unknown_id.json --ontology ontology/hydra_ontology.yaml --export-dir /tmp/hydra_extraction_cli_invalid && echo "invalid extraction cli rejected"`
 
 ## TASK-EXT-014: Documentar flujo de extraccion sin corpus real
 
@@ -896,6 +961,7 @@ Requisitos:
 - Crear `build_graph_edges(extraction: Extraction) -> list[GraphEdge]`.
 - No crear edges si `evidence_fragments` esta vacio.
 - Toda edge debe tener `evidence_refs`.
+- `evidence_refs` debe referenciar indices o IDs deterministas de `evidence_fragments`, no texto completo.
 - Tipos permitidos:
   - `MENTIONS`
   - `HAS_NARRATIVE`
@@ -910,6 +976,7 @@ Criterios de aceptacion:
 
 Comandos de verificacion:
 - `cd hydra/backend && uv run python -c "from hydra_api.schemas import Extraction; from hydra_api.graph_projection import build_graph_edges; assert build_graph_edges(Extraction(document_id='d', title='T', source='S'))==[]; print('no evidence no edges ok')"`
+- `cd hydra/backend && uv run python -c "from hydra_api.schemas import Extraction, EvidenceFragment; from hydra_api.graph_projection import build_graph_edges; e=Extraction(document_id='d', title='T', source='S', narrative_frame_id='frame', evidence_fragments=[EvidenceFragment(text='evidencia sintetica', source_document_id='d')]); edges=build_graph_edges(e); assert edges and all(edge.evidence_refs for edge in edges); assert 'evidencia sintetica' not in str([edge.evidence_refs for edge in edges]); print('evidence edges ok')"`
 
 ## TASK-EXT-018: Crear GraphProjection completo
 
@@ -932,6 +999,7 @@ Requisitos:
 - Usar `build_graph_edges`.
 - Incluir `document_id`.
 - Incluir `evidence_refs`.
+- `evidence_refs` del projection debe derivarse de las edges, no inventarse.
 - No llamar Neo4j.
 
 Criterios de aceptacion:
@@ -940,6 +1008,7 @@ Criterios de aceptacion:
 
 Comandos de verificacion:
 - `cd hydra/backend && uv run python -c "from hydra_api.schemas import Extraction; from hydra_api.graph_projection import build_graph_projection; gp=build_graph_projection(Extraction(document_id='d', title='T', source='S')); assert gp.document_id=='d'; print(gp.model_dump_json()); print('graph projection ok')"`
+- `cd hydra/backend && uv run python -c "from hydra_api.schemas import Extraction, EvidenceFragment; from hydra_api.graph_projection import build_graph_projection; e=Extraction(document_id='d', title='T', source='S', narrative_frame_id='frame', evidence_fragments=[EvidenceFragment(text='evidencia sintetica', source_document_id='d')]); gp=build_graph_projection(e); assert gp.edges and gp.evidence_refs; print('graph projection evidence refs ok')"`
 
 ## TASK-EXT-019: Exportar GraphProjection JSON
 
