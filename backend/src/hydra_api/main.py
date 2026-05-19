@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from hydra_api.errors import HydraError, http_exception_handler, hydra_error_handler
 from hydra_api.logging import setup_logging
-from hydra_api.schemas import QueryRequest, QueryResponse
+from hydra_api.schemas import BriefingRequest, BriefingResponse, QueryRequest, QueryResponse
 
 setup_logging()
 
@@ -54,4 +54,36 @@ def query(request: QueryRequest) -> QueryResponse:
         raise HTTPException(
             status_code=500,
             detail="An internal error occurred while processing the query.",
+        )
+
+
+@app.post("/briefing", response_model=BriefingResponse)
+def briefing(request: BriefingRequest) -> BriefingResponse:
+    """Build a traceable briefing for a question.
+
+    The service is injected via ``app.state.briefing_service`` for
+    testability.  When not injected, constructs the real service
+    lazily at request time.
+
+    Errors are surfaced with a generic message — no stack traces
+    or internal details are exposed to the client.
+    """
+    briefing_service = getattr(app.state, "briefing_service", None)
+    try:
+        if briefing_service is None:
+            from hydra_api.briefing_service import BriefingService
+            from hydra_api.rag_service import create_query_service
+
+            query_service = create_query_service()
+            briefing_service = BriefingService(
+                query_service=query_service,
+                council_service=None,
+            )
+            app.state.briefing_service = briefing_service
+
+        return briefing_service.brief(request)
+    except Exception:
+        raise HTTPException(
+            status_code=500,
+            detail="An internal error occurred while building the briefing.",
         )
