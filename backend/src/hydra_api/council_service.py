@@ -188,6 +188,36 @@ class CouncilService:
         self.risk_reviewer_chain = risk_reviewer_chain
         self.final_synthesizer_chain = final_synthesizer_chain
 
+    @staticmethod
+    def _invoke_chain(chain: Any, prompt: str) -> str:
+        """Invoke a chain safely, supporting fakes and LangChain objects.
+
+        - If the chain has ``.invoke()``, call ``chain.invoke(prompt)``.
+        - Otherwise call ``chain(prompt)`` (for fake callables).
+        - Extract ``.content`` from the response if present.
+        - Fall back to ``str(response)`` for non-textual outputs.
+
+        Parameters
+        ----------
+        chain : Any
+            A callable or LangChain Runnable.
+        prompt : str
+            The prompt string to send.
+
+        Returns
+        -------
+        str
+            The response text.
+        """
+        if hasattr(chain, "invoke"):
+            response = chain.invoke(prompt)
+        else:
+            response = chain(prompt)
+
+        if hasattr(response, "content"):
+            return str(response.content)
+        return str(response)
+
     def run(
         self,
         question: str,
@@ -225,7 +255,7 @@ class CouncilService:
         analyst_prompt = build_narrative_analyst_prompt(
             question, retrieved_documents
         )
-        analyst_draft = self.analyst_chain(analyst_prompt)
+        analyst_draft = self._invoke_chain(self.analyst_chain, analyst_prompt)
         if not analyst_draft:
             analyst_draft = ""
 
@@ -233,14 +263,14 @@ class CouncilService:
         evidence_prompt = build_evidence_reviewer_prompt(
             analyst_draft, retrieved_documents
         )
-        evidence_raw = self.evidence_reviewer_chain(evidence_prompt)
+        evidence_raw = self._invoke_chain(self.evidence_reviewer_chain, evidence_prompt)
         evidence_review = _safe_parse_chain_output(evidence_raw)
 
         # Step 3: Risk Reviewer
         risk_prompt = build_risk_reviewer_prompt(
             analyst_draft, retrieved_documents
         )
-        risk_raw = self.risk_reviewer_chain(risk_prompt)
+        risk_raw = self._invoke_chain(self.risk_reviewer_chain, risk_prompt)
         risk_review = _safe_parse_chain_output(risk_raw)
 
         # Extract risk level with safe fallback.
@@ -259,7 +289,7 @@ class CouncilService:
             risk_review,
             retrieved_documents,
         )
-        briefing_markdown = self.final_synthesizer_chain(synthesizer_prompt)
+        briefing_markdown = self._invoke_chain(self.final_synthesizer_chain, synthesizer_prompt)
         if not briefing_markdown or not str(briefing_markdown).strip():
             from hydra_api.briefing_config import MANDATORY_CORPUS_LIMITATION
 
