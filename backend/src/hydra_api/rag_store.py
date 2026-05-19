@@ -29,19 +29,24 @@ def fetch_chunks_without_embeddings(
     cur : Cursor
         An open database cursor.
     limit : int
-        Maximum number of rows to return.
+        Maximum number of rows to return.  Must be >= 1.
 
     Returns
     -------
     list[dict]
-        Each dict contains ``chunk_id`` and ``content``.
+        Each dict contains ``id``, ``document_id``, ``chunk_index``,
+        ``content``, and ``metadata``.  Rows are ordered by
+        ``document_id`` then ``chunk_index``.
     """
+    if limit < 1:
+        raise ValueError("limit must be >= 1")
+
     cur.execute(
         """
-        SELECT id AS chunk_id, content
+        SELECT id, document_id, chunk_index, content, metadata
         FROM document_chunks
         WHERE embedding IS NULL
-        ORDER BY id
+        ORDER BY document_id, chunk_index
         LIMIT %s
         """,
         (limit,),
@@ -71,6 +76,9 @@ def update_chunk_embedding(
     embedding : list[float]
         Embedding vector (validated to 4096 dimensions).
     """
+    if not chunk_id or not chunk_id.strip():
+        raise ValueError("chunk_id must not be empty")
+
     validated = validate_embedding_vector(embedding)
 
     cur.execute(
@@ -105,7 +113,7 @@ def search_similar_chunks(
     query_embedding : list[float]
         The query embedding vector (4096 dimensions).
     top_k : int
-        Number of closest results to return.
+        Number of closest results to return.  Must be >= 1.
 
     Returns
     -------
@@ -113,6 +121,9 @@ def search_similar_chunks(
         Each dict contains ``document_id``, ``chunk_id``, ``title``,
         ``source``, ``content``, and ``score`` (``1 - distance``).
     """
+    if top_k < 1:
+        raise ValueError("top_k must be >= 1")
+
     validated = validate_embedding_vector(query_embedding)
 
     cur.execute(

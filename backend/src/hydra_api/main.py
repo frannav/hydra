@@ -42,10 +42,9 @@ def query(request: QueryRequest) -> QueryResponse:
     """
     query_service = getattr(app.state, "query_service", None)
     if query_service is None:
-        raise HTTPException(
-            status_code=503,
-            detail="Query service not configured. Inject via app.state.query_service.",
-        )
+        from hydra_api.rag_service import create_query_service
+
+        query_service = create_query_service()
 
     try:
         return query_service.query(request)

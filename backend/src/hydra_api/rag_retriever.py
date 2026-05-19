@@ -31,16 +31,29 @@ def to_retrieved_document(row: dict[str, Any]) -> RetrievedDocument:
     RetrievedDocument
         A validated Pydantic model with evidence truncated to
         ``EVIDENCE_SNIPPET_CHARS`` characters.
+
+    Raises
+    ------
+    ValueError
+        If ``score`` is ``None`` or cannot be converted to float.
     """
     content = row.get("content", "")
     evidence = content[:EVIDENCE_SNIPPET_CHARS] if content else ""
 
+    raw_score = row.get("score")
+    if raw_score is None:
+        raise ValueError("score must not be None")
+    try:
+        score = float(raw_score)
+    except (TypeError, ValueError):
+        raise ValueError(f"score must be numeric, got {raw_score!r}")
+
     return RetrievedDocument(
         document_id=row["document_id"],
         chunk_id=row["chunk_id"],
-        title=row["title"],
-        source=row["source"],
-        score=float(row["score"]),
+        title=row.get("title", "unknown"),
+        source=row.get("source", "unknown"),
+        score=score,
         evidence=evidence,
     )
 

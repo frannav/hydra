@@ -41,6 +41,11 @@ class RagIndexingService:
         batch_size: int = 32,
         fetch_limit: int = 100,
     ) -> None:
+        if batch_size < 1:
+            raise ValueError("batch_size must be >= 1")
+        if fetch_limit < 1:
+            raise ValueError("fetch_limit must be >= 1")
+
         self.connection_factory = connection_factory
         self.embedding_model = embedding_model
         self.batch_size = batch_size
@@ -57,19 +62,22 @@ class RagIndexingService:
         Parameters
         ----------
         max_batches : int | None
-            If provided, stop after this many batches.  ``None`` means
-            continue until no pending chunks remain.
+            If provided, stop after this many batches.  Must be >= 1.
+            ``None`` means continue until no pending chunks remain.
 
         Returns
         -------
         dict
             ``{"batches": N, "chunks_embedded": M}``.
         """
+        if max_batches is not None and max_batches < 1:
+            raise ValueError("max_batches must be >= 1")
         batches = 0
         total_embedded = 0
 
         while True:
             conn = self.connection_factory()
+            cur = None
             try:
                 cur = conn.cursor()
                 chunks = fetch_chunks_without_embeddings(cur, self.fetch_limit)
@@ -81,8 +89,13 @@ class RagIndexingService:
                     texts = [c["content"] for c in batch]
                     embeddings = self.embedding_model.embed_documents(texts)
 
+                    if len(embeddings) != len(batch):
+                        raise ValueError(
+                            f"Expected {len(batch)} embeddings, got {len(embeddings)}"
+                        )
+
                     for chunk, emb in zip(batch, embeddings):
-                        update_chunk_embedding(cur, chunk["chunk_id"], emb)
+                        update_chunk_embedding(cur, chunk["id"], emb)
 
                     conn.commit()
                     total_embedded += len(batch)
@@ -92,11 +105,13 @@ class RagIndexingService:
                         return {"batches": batches, "chunks_embedded": total_embedded}
 
             except Exception:
-                conn.rollback()
+                if conn:
+                    conn.rollback()
                 raise
             finally:
-                # Close the cursor; the connection is returned to the pool
-                # by the factory and should not be closed here.
-                cur.close()
+                if cur is not None:
+                    cur.close()
+                if conn:
+                    conn.close()
 
         return {"batches": batches, "chunks_embedded": total_embedded}

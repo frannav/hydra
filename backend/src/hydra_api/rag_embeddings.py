@@ -47,13 +47,20 @@ def validate_embedding_vector(
     return [float(v) for v in vector]
 
 
-def create_embedding_model() -> "OpenAIEmbeddings":
+def create_embedding_model(
+    settings: Any | None = None,
+) -> "OpenAIEmbeddings":
     """Create an OpenAI-compatible embedding model instance.
 
-    Reads ``MODEL_API_KEY`` and ``MODEL_API_BASE_URL`` from the
-    environment (via ``os.environ``) so that the actual Settings
-    object is **not** required at import time.  This keeps the
-    module side-effect-free.
+    If *settings* is ``None``, calls ``get_settings()`` lazily
+    (not at import time).  Uses existing Settings fields:
+    ``model_api_key``, ``model_api_base_url``, ``hydra_embedding_model``.
+
+    Parameters
+    ----------
+    settings : Settings | None
+        Optional Settings instance.  When ``None``, ``get_settings()``
+        is called inside this function.
 
     Returns
     -------
@@ -63,13 +70,13 @@ def create_embedding_model() -> "OpenAIEmbeddings":
     # Lazy import to avoid import-time side effects.
     from langchain_openai import OpenAIEmbeddings
 
-    import os
+    if settings is None:
+        from hydra_api.config import get_settings
 
-    api_key = os.environ.get("MODEL_API_KEY", "")
-    api_base = os.environ.get("MODEL_API_BASE_URL", "https://example.invalid/v1")
+        settings = get_settings()
 
     return OpenAIEmbeddings(
-        model=os.environ.get("HYDRA_EMBEDDING_MODEL", "text-embedding-3-small"),
-        api_key=api_key,
-        base_url=api_base,
+        model=settings.hydra_embedding_model,
+        api_key=settings.model_api_key,
+        base_url=settings.model_api_base_url,
     )

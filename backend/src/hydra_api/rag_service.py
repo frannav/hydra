@@ -10,6 +10,7 @@ at import time (no DB connections, no model calls).
 
 from __future__ import annotations
 
+import uuid
 from typing import TYPE_CHECKING, Any, Callable
 
 from hydra_api.schemas import QueryRequest, QueryResponse
@@ -62,8 +63,8 @@ class QueryService:
         QueryResponse
             The answer with retrieved documents, limitations, and trace_id.
         """
-        # Generate a local trace_id if no Langfuse is configured.
-        trace_id = f"trace-local-{id(request)}"
+        # Generate a local safe trace_id using uuid4.
+        trace_id = f"trace-local-{uuid.uuid4().hex[:12]}"
 
         # Step 1: Retrieve relevant documents.
         retrieved_docs = self.retriever(request.question, request.top_k)
@@ -87,7 +88,28 @@ class QueryService:
         else:
             chain = self.answer_chain
 
-        answer = chain(prompt)
+        # Invoke the chain safely: prefer .invoke() for LCEL, fallback to callable.
+        if hasattr(chain, "invoke"):
+            raw_response = chain.invoke(prompt)
+        else:
+            raw_response = chain(prompt)
+
+        # Extract answer text from the response.
+        if hasattr(raw_response, "content"):
+            answer = str(raw_response.content)
+        else:
+            answer = str(raw_response)
+
+        # Reject empty/whitespace-only answer into a safe limitation.
+        if not answer or not answer.strip():
+            return QueryResponse(
+                answer="No se pudo generar una respuesta con la evidencia disponible.",
+                retrieved_documents=retrieved_docs,
+                limitations=[
+                    "La respuesta del modelo estaba vacia o no pudo generarse.",
+                ],
+                trace_id=trace_id,
+            )
 
         return QueryResponse(
             answer=answer,
@@ -105,3 +127,39 @@ def _build_no_context_response(
     from hydra_api.rag_answering import build_no_context_response as _bnc
 
     return _bnc(question, trace_id)
+
+
+def create_query_service() -> QueryService:
+    """Create a real QueryService wired to real dependencies.
+
+    This factory is called lazily at request time in ``main.py``
+    when no fake ``query_service`` is injected via ``app.state``.
+
+    Returns
+    -------
+    QueryService
+        A fully wired query service.
+    """
+    from hydra_api.rag_embeddings import create_embedding_model
+    from hydra_api.rag_retriever import create_retriever_runnable
+    from hydra_api.rag_answering import create_chat_model, create_answer_chain
+
+    embedding_model = create_embedding_model()
+
+    def connection_factory():
+        from hydra_api.db import get_connection
+
+        return get_connection()
+
+    retriever = create_retriever_runnable(
+        connection_factory=connection_factory,
+        embedding_model=embedding_model,
+    )
+
+    chat_model = create_chat_model()
+    answer_chain = create_answer_chain(chat_model)
+
+    return QueryService(
+        retriever=retriever,
+        answer_chain=answer_chain,
+    )

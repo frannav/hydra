@@ -23,22 +23,26 @@ if TYPE_CHECKING:
 
 def build_answer_prompt(
     question: str,
-    retrieved_docs: List[RetrievedDocument],
+    retrieved_docs: List[Any],
 ) -> str:
     """Build a grounded answering prompt for the LLM.
 
-    The prompt instructs the model to:
-    - Answer **only** using the provided evidence.
-    - Cite evidence sources explicitly.
-    - State limitations when evidence is insufficient.
-    - Avoid claiming coordination, intent, or attribution without
-      explicit evidence.
+    Accepts both ``RetrievedDocument`` instances and dict-like rows
+    with keys: ``document_id``, ``chunk_id``, ``title``, ``source``,
+    ``score``, ``evidence``.
+
+    For an empty list, returns a safe prompt stating there is no
+    retrieved context and the answer must state a limitation.
+
+    For non-empty evidence, includes the question, brief evidence
+    (never full documents), traceability fields, and the exact
+    Spanish word ``coordinacion`` in the no-coordination rule.
 
     Parameters
     ----------
     question : str
         The user's question.
-    retrieved_docs : list[RetrievedDocument]
+    retrieved_docs : list[RetrievedDocument | dict]
         Document chunks retrieved for the question.
 
     Returns
@@ -48,29 +52,56 @@ def build_answer_prompt(
     """
     if not retrieved_docs:
         return (
-            f"Question: {question}\n\n"
-            "No relevant documents were found in the corpus. "
-            "Respond that there is insufficient context to answer."
+            f"Pregunta: {question}\n\n"
+            "No se encontraron documentos relevantes en el corpus. "
+            "Responde indicando que no hay contexto suficiente para "
+            "responder y menciona esta limitacion."
         )
 
     evidence_sections = []
     for idx, doc in enumerate(retrieved_docs, start=1):
+        # Support both RetrievedDocument objects and dict-like rows.
+        if hasattr(doc, "document_id"):
+            doc_id = doc.document_id
+            chunk_id = doc.chunk_id
+            title = doc.title
+            source = doc.source
+            evidence = doc.evidence
+        else:
+            doc_id = doc.get("document_id", "unknown")
+            chunk_id = doc.get("chunk_id", "unknown")
+            title = doc.get("title", "unknown")
+            source = doc.get("source", "unknown")
+            evidence = doc.get("evidence", "")
+
+        # Defensive truncation to EVIDENCE_SNIPPET_CHARS.
+        if evidence and len(evidence) > EVIDENCE_SNIPPET_CHARS:
+            evidence = evidence[:EVIDENCE_SNIPPET_CHARS]
+
         evidence_sections.append(
-            f"[{idx}] Document: {doc.title}\n"
-            f"    Source: {doc.source}\n"
-            f"    Score: {doc.score:.4f}\n"
-            f"    Evidence: {doc.evidence}"
+            f"[{idx}] Documento: {doc_id}\n"
+            f"    Chunk: {chunk_id}\n"
+            f"    Titulo: {title}\n"
+            f"    Fuente: {source}\n"
+            f"    Evidencia: {evidence}"
         )
 
     evidence_block = "\n\n".join(evidence_sections)
 
     return (
-        f"Question: {question}\n\n"
-        "Use ONLY the following evidence to answer. "
-        "Cite sources explicitly. State limitations when evidence is insufficient. "
-        "Do not claim coordination, intent, or attribution without explicit evidence.\n\n"
+        f"Pregunta: {question}\n\n"
+        "Usa SOLAMENTE la siguiente evidencia para responder. "
+        "Cita las fuentes explicitamente. Incluye una lista de "
+        "limitaciones describiendo lo que el documento no cubre.\n"
+        "No afirmes que multiples actores estan coordinando, actuando "
+        "en concert o compartiendo objetivos sin evidencia explicita "
+        "de coordinacion en el texto. Cuando la evidencia sea "
+        "insuficiente, asigna el marco narrativo "
+        "'unknown_or_insufficient_evidence'.\n"
+        "No inventes hechos, actores, eventos o relaciones que no "
+        "estan presentes en el texto fuente.\n\n"
         f"{evidence_block}\n\n"
-        "Answer:"
+        "Respuesta:"
     )
 
 
@@ -78,13 +109,20 @@ def build_answer_prompt(
 # Chat model factory
 # ---------------------------------------------------------------------------
 
-def create_chat_model() -> "BaseChatModel":
+def create_chat_model(
+    settings: Any | None = None,
+) -> "BaseChatModel":
     """Create a chat model instance for answering.
 
-    Reads ``MODEL_API_KEY`` and ``MODEL_API_BASE_URL`` from the
-    environment (via ``os.environ``) so that the actual Settings
-    object is **not** required at import time.  This keeps the
-    module side-effect-free.
+    If *settings* is ``None``, calls ``get_settings()`` lazily
+    (not at import time).  Uses existing Settings fields:
+    ``model_api_key``, ``model_api_base_url``, ``hydra_chat_model``.
+
+    Parameters
+    ----------
+    settings : Settings | None
+        Optional Settings instance.  When ``None``, ``get_settings()``
+        is called inside this function.
 
     Returns
     -------
@@ -94,15 +132,15 @@ def create_chat_model() -> "BaseChatModel":
     # Lazy import to avoid import-time side effects.
     from langchain_openai import ChatOpenAI
 
-    import os
+    if settings is None:
+        from hydra_api.config import get_settings
 
-    api_key = os.environ.get("MODEL_API_KEY", "")
-    api_base = os.environ.get("MODEL_API_BASE_URL", "https://example.invalid/v1")
+        settings = get_settings()
 
     return ChatOpenAI(
-        model=os.environ.get("HYDRA_CHAT_MODEL", "qwen3.6"),
-        api_key=api_key,
-        base_url=api_base,
+        model=settings.hydra_chat_model,
+        api_key=settings.model_api_key,
+        base_url=settings.model_api_base_url,
     )
 
 
