@@ -10,7 +10,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
 # ---------------------------------------------------------------------------
@@ -152,8 +152,29 @@ class IngestionRunResult(BaseModel):
 class QueryRequest(BaseModel):
     """Request body for POST /query."""
 
-    question: str
-    top_k: int = 5
+    question: str = Field(
+        ...,
+        min_length=1,
+        description="The question to answer. Must not be empty or whitespace-only.",
+    )
+    top_k: int = Field(
+        default=5,
+        ge=1,
+        description="Number of top results to retrieve. Must be >= 1.",
+    )
+
+    @model_validator(mode="before")
+    @classmethod
+    def _validate_question(cls, data: Any) -> Any:
+        """Reject empty or whitespace-only questions before field validation."""
+        if isinstance(data, dict):
+            q = data.get("question", "")
+            if not q or not q.strip():
+                raise ValueError("Question must not be empty or whitespace-only.")
+        elif isinstance(data, str):
+            if not data or not data.strip():
+                raise ValueError("Question must not be empty or whitespace-only.")
+        return data
 
 
 class RetrievedDocument(BaseModel):

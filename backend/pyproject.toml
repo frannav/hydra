@@ -11,6 +11,9 @@ dependencies = [
     "pydantic-settings",
     "PyYAML",
     "openai>=2.37.0",
+    "langchain-core",
+    "langchain-openai",
+    "pgvector",
 ]
 
 [project.optional-dependencies]

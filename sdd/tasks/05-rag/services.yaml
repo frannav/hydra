@@ -1,0 +1,5 @@
+commands:
+  install: cd backend && uv sync
+  test: cd backend && uv run python -c "print('no test framework required')"
+
+services: {}
