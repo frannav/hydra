@@ -17,6 +17,7 @@ from typing import TYPE_CHECKING, Any, Callable, Optional
 from hydra_api.schemas import BriefingResponse, CouncilReview, RiskLevel
 
 if TYPE_CHECKING:
+    from hydra_api.observability import ObservabilityEmitter
     from hydra_api.schemas import BriefingRequest, QueryResponse, RetrievedDocument
 
 
@@ -191,15 +192,20 @@ class BriefingService:
         returns an object with ``briefing_markdown``, ``risk_level``, and
         ``council_review`` attributes.  When ``None``, the council path is
         skipped.
+    emitter : :class:`ObservabilityEmitter`, optional
+        An observability emitter for tracing.  When ``None``,
+        a local no-op emitter is created lazily.
     """
 
     def __init__(
         self,
         query_service: Any,
         council_service: Any | None = None,
+        emitter: "ObservabilityEmitter | None" = None,
     ) -> None:
         self.query_service = query_service
         self.council_service = council_service
+        self.emitter = emitter
 
     def brief(self, request: BriefingRequest) -> BriefingResponse:
         """Execute the full briefing pipeline.
@@ -213,6 +219,10 @@ class BriefingService:
         The ``trace_id`` from the ``QueryResponse`` is preserved in the
         final ``BriefingResponse``.
 
+        Tracing events are emitted for council usage, risk level,
+        and unsupported claims count.  No full prompts or documents
+        are recorded in traces.
+
         Parameters
         ----------
         request : BriefingRequest
@@ -224,6 +234,17 @@ class BriefingService:
             The final briefing with markdown, risk level, council review,
             and trace id.
         """
+        # Resolve emitter (lazy fallback to local no-op).
+        emitter = self.emitter
+        if emitter is None:
+            from hydra_api.observability import _LocalEmitter
+
+            emitter = _LocalEmitter()
+
+        trace_metadata: dict[str, Any] = {
+            "use_council": request.use_council,
+        }
+
         # Step 1: retrieve documents and answer via QueryService.
         query_response: QueryResponse = self.query_service.query(request)
 
@@ -232,11 +253,19 @@ class BriefingService:
 
         # Step 2: No documents → no-context path (skips council and models).
         if not retrieved:
-            return build_no_context_briefing_response(
+            response = build_no_context_briefing_response(
                 request.question,
                 trace_id,
                 use_council=request.use_council,
             )
+
+            # Record council omission in trace.
+            trace_metadata["council_used"] = request.use_council
+            if not request.use_council:
+                trace_metadata["council_omitted"] = True
+            emitter.event(trace_id, "briefing_no_context", trace_metadata)
+
+            return response
 
         # Step 3: With documents.
         if request.use_council and self.council_service is not None:
@@ -248,6 +277,16 @@ class BriefingService:
                 retrieved,
             )
 
+            council_review = council_result.council_review
+            unsupported_count = len(council_review.unsupported_claims) if council_review else 0
+
+            trace_metadata["council_used"] = True
+            trace_metadata["risk_level"] = council_result.risk_level.value
+            trace_metadata["unsupported_claims_count"] = unsupported_count
+            if council_review:
+                trace_metadata["evidence_supported"] = council_review.evidence_supported
+            emitter.event(trace_id, "briefing_council", trace_metadata)
+
             return BriefingResponse(
                 briefing_markdown=council_result.briefing_markdown,
                 risk_level=council_result.risk_level,
@@ -257,6 +296,10 @@ class BriefingService:
 
         # No-council path: use draft directly.
         draft = build_briefing_draft(request.question, query_response)
+
+        trace_metadata["council_used"] = False
+        trace_metadata["council_omitted"] = True
+        emitter.event(trace_id, "briefing_no_council", trace_metadata)
 
         return BriefingResponse(
             briefing_markdown=draft,
