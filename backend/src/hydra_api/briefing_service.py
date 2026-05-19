@@ -156,10 +156,14 @@ def build_briefing_draft(
     lines.append("## Limitaciones")
     lines.append("")
 
+    # Always include the mandatory corpus limitation, unless already present.
+    has_corpus_limit = any(
+        "corpus" in lim.lower() for lim in limitations
+    )
     if limitations:
         for lim in limitations:
             lines.append(f"- {lim}")
-    else:
+    if not has_corpus_limit:
         lines.append(f"- {MANDATORY_CORPUS_LIMITATION}")
 
     lines.append("")

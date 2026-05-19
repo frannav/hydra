@@ -18,6 +18,19 @@ if TYPE_CHECKING:
     from hydra_api.schemas import RetrievedDocument
 
 
+def _truncate_evidence(text: str, max_chars: int = 500) -> str:
+    """Truncate evidence text to *max_chars*, normalising line breaks."""
+    if not isinstance(text, str):
+        return ""
+    # Collapse repeated line breaks.
+    import re
+
+    text = re.sub(r"\n{3,}", "\n\n", text)
+    if len(text) > max_chars:
+        return text[:max_chars] + "..."
+    return text
+
+
 def build_narrative_analyst_prompt(
     question: str,
     retrieved_documents: List[Any],
@@ -75,7 +88,7 @@ def build_narrative_analyst_prompt(
             f"    Titulo: {title}\n"
             f"    Fuente: {source}\n"
             f"    Puntuacion: {score}\n"
-            f"    Evidencia: {evidence}"
+            f"    Evidencia: {_truncate_evidence(evidence)}"
         )
 
     evidence_block = "\n\n".join(evidence_sections)
@@ -153,7 +166,7 @@ def build_evidence_reviewer_prompt(
             f"    Chunk: {chunk_id}\n"
             f"    Titulo: {title}\n"
             f"    Fuente: {source}\n"
-            f"    Evidencia: {evidence}"
+            f"    Evidencia: {_truncate_evidence(evidence)}"
         )
 
     evidence_block = "\n\n".join(evidence_sections)
@@ -237,7 +250,7 @@ def build_risk_reviewer_prompt(
             f"    Chunk: {chunk_id}\n"
             f"    Titulo: {title}\n"
             f"    Fuente: {source}\n"
-            f"    Evidencia: {evidence}"
+            f"    Evidencia: {_truncate_evidence(evidence)}"
         )
 
     evidence_block = "\n\n".join(evidence_sections)
@@ -312,7 +325,7 @@ def build_final_synthesizer_prompt(
             "eliminadas o marcadas como no verificadas):\n"
         )
         for claim in unsupported_claims:
-            unsupported_section += f"- {claim}\n"
+            unsupported_section += f"- {_truncate_evidence(str(claim), 200)}\n"
     else:
         unsupported_section = (
             "\nNo se detectaron afirmaciones no soportadas.\n"
@@ -330,38 +343,70 @@ def build_final_synthesizer_prompt(
             "\nLa evidencia respalda las afirmaciones principales del borrador.\n"
         )
 
+    # Build recovered sources section.
+    if retrieved_documents:
+        sources_lines = []
+        for idx, doc in enumerate(retrieved_documents, start=1):
+            if hasattr(doc, "document_id"):
+                doc_id = doc.document_id
+                chunk_id = doc.chunk_id
+                title = doc.title
+                source = doc.source
+                evidence = _truncate_evidence(doc.evidence, 300)
+                score = doc.score
+            else:
+                doc_id = doc.get("document_id", "unknown")
+                chunk_id = doc.get("chunk_id", "unknown")
+                title = doc.get("title", "unknown")
+                source = doc.get("source", "unknown")
+                evidence = _truncate_evidence(doc.get("evidence", ""), 300)
+                score = doc.get("score", 0.0)
+
+            sources_lines.append(
+                f"[{idx}] document_id: {doc_id}, chunk_id: {chunk_id}, "
+                f"titulo: {title}, fuente: {source}, score: {score}, "
+                f"evidencia: {evidence}"
+            )
+        sources_block = "\n".join(sources_lines)
+    else:
+        sources_block = "(sin documentos recuperados)"
+
     return (
         "Eres el Sintetizador Final del council de HYDRA. "
         "Tu tarea es generar un briefing final en formato markdown "
         "que integre todas las revisiones del council.\n\n"
         f"Pregunta original: {question}\n\n"
         "Secciones requeridas para el briefing:\n"
-        "- Resumen ejecutivo\n"
-        "- Analisis narrativo\n"
-        "- Evaluacion de evidencia\n"
-        "- Nivel de riesgo\n"
-        "- Limitaciones\n\n"
+        "- Pregunta\n"
+        "- Hallazgos con evidencia\n"
+        "- Riesgo\n"
+        "- Limitaciones\n"
+        "- Fuentes recuperadas\n\n"
         f"Borrador del analista:\n{analyst_draft}\n\n"
         f"Evidencia respalda afirmaciones: {evidence_supported}\n"
         f"Nivel de riesgo: {risk_level}\n"
         f"Revision de riesgo: {risk_text}\n"
         f"{evidence_status}"
         f"{unsupported_section}"
-        "\nReglas para el briefing final:\n"
+        "\nFuentes recuperadas:\n"
+        f"{sources_block}\n\n"
+        "Reglas para el briefing final:\n"
         "1. El briefing debe incluir todas las secciones requeridas.\n"
-        "2. Elimina o marca como no verificadas todas las afirmaciones "
+        "2. Cada hallazgo debe hacer referencia a un document_id y chunk_id, "
+        "o convertirse en limitacion.\n"
+        "3. Elimina o marca como no verificadas todas las afirmaciones "
         "no soportadas por evidencia.\n"
-        "3. Si evidence_supported es false, corrige o limita las "
+        "4. Si evidence_supported es false, corrige o limita las "
         "afirmaciones no soportadas.\n"
-        "4. Incluye la siguiente limitacion del corpus obligatoriamente:\n"
+        "5. Incluye la siguiente limitacion del corpus obligatoriamente:\n"
         "   \"Limitacion del corpus: el presente briefing se basa "
         "exclusivamente en los documentos disponibles en el corpus. "
         "Las conclusiones pueden no reflejar informacion externa no "
         "incluida en este corpus.\"\n"
-        "5. No inventes informacion que no este respaldada por la "
+        "6. No inventes informacion que no este respaldada por la "
         "evidencia.\n"
-        "6. No afirmes que multiples actores estan coordinando sin "
+        "7. No afirmes que multiples actores estan coordinando sin "
         "evidencia explicita de coordinacion.\n"
-        "7. El nivel de riesgo debe ser: bajo, medio, o alto.\n\n"
+        "8. El nivel de riesgo debe ser: bajo, medio, o alto.\n\n"
         "Genera el briefing final en formato markdown:\n"
     )

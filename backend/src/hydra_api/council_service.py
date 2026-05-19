@@ -12,6 +12,7 @@ at import time (no .env reads, no DB connections, no model calls).
 
 from __future__ import annotations
 
+import json
 from typing import TYPE_CHECKING, Any, Callable, Optional
 
 from hydra_api.schemas import CouncilReview, RiskLevel
@@ -22,6 +23,52 @@ if TYPE_CHECKING:
 # ---------------------------------------------------------------------------
 # Parsers
 # ---------------------------------------------------------------------------
+
+
+def _safe_parse_chain_output(value: Any) -> dict[str, Any]:
+    """Safely parse a chain output into a dict.
+
+    - If already a dict, return it.
+    - If a string, try JSON parse; on failure extract safe defaults.
+    - Never uses ``eval``.
+
+    Parameters
+    ----------
+    value : Any
+        Raw output from a chain callable.
+
+    Returns
+    -------
+    dict
+        A safe dict with ``evidence_supported``, ``unsupported_claims``,
+        ``risk_level``, ``risk_review`` keys (may be missing).
+    """
+    if isinstance(value, dict):
+        return value
+
+    if isinstance(value, str):
+        value = value.strip()
+        if not value:
+            return {}
+        try:
+            parsed = json.loads(value)
+            if isinstance(parsed, dict):
+                return parsed
+        except (json.JSONDecodeError, ValueError):
+            pass
+        # Not JSON — return empty dict (will get safe defaults).
+        return {}
+
+    return {}
+
+
+def _truncate(value: str, max_len: int = 200) -> str:
+    """Truncate a string to *max_len* characters."""
+    if not isinstance(value, str):
+        return ""
+    if len(value) > max_len:
+        return value[:max_len] + "..."
+    return value
 
 
 def normalize_risk_level(value: str) -> RiskLevel:
@@ -56,7 +103,7 @@ def build_council_review(data: dict[str, Any]) -> CouncilReview:
     Missing or invalid fields receive safe defaults:
       - ``evidence_supported`` defaults to ``False``
       - ``unsupported_claims`` defaults to ``[]``
-      - ``risk_review`` defaults to ``""``
+      - ``risk_review`` defaults to a safe limitation message
 
     Parameters
     ----------
@@ -72,7 +119,7 @@ def build_council_review(data: dict[str, Any]) -> CouncilReview:
         return CouncilReview(
             evidence_supported=False,
             unsupported_claims=[],
-            risk_review="",
+            risk_review="No se pudo analizar la revision del council.",
         )
 
     evidence_supported = data.get("evidence_supported", False)
@@ -81,11 +128,23 @@ def build_council_review(data: dict[str, Any]) -> CouncilReview:
 
     unsupported_claims = data.get("unsupported_claims", [])
     if not isinstance(unsupported_claims, list):
-        unsupported_claims = []
+        # Convert string to a brief list.
+        if isinstance(unsupported_claims, str):
+            unsupported_claims = [_truncate(unsupported_claims, 200)]
+        else:
+            unsupported_claims = []
 
     risk_review = data.get("risk_review", "")
     if not isinstance(risk_review, str):
         risk_review = ""
+
+    # Ensure risk_review is non-empty.
+    if not risk_review.strip():
+        risk_review = "No se pudo realizar revision de riesgo: evidencia insuficiente o respuesta del modelo vacia."
+
+    # Truncate long strings.
+    risk_review = _truncate(risk_review, 500)
+    unsupported_claims = [_truncate(c, 200) for c in unsupported_claims]
 
     return CouncilReview(
         evidence_supported=evidence_supported,
@@ -174,17 +233,15 @@ class CouncilService:
         evidence_prompt = build_evidence_reviewer_prompt(
             analyst_draft, retrieved_documents
         )
-        evidence_review = self.evidence_reviewer_chain(evidence_prompt)
-        if not isinstance(evidence_review, dict):
-            evidence_review = {}
+        evidence_raw = self.evidence_reviewer_chain(evidence_prompt)
+        evidence_review = _safe_parse_chain_output(evidence_raw)
 
         # Step 3: Risk Reviewer
         risk_prompt = build_risk_reviewer_prompt(
             analyst_draft, retrieved_documents
         )
-        risk_review = self.risk_reviewer_chain(risk_prompt)
-        if not isinstance(risk_review, dict):
-            risk_review = {}
+        risk_raw = self.risk_reviewer_chain(risk_prompt)
+        risk_review = _safe_parse_chain_output(risk_raw)
 
         # Extract risk level with safe fallback.
         risk_level = normalize_risk_level(
@@ -203,8 +260,15 @@ class CouncilService:
             retrieved_documents,
         )
         briefing_markdown = self.final_synthesizer_chain(synthesizer_prompt)
-        if not briefing_markdown:
-            briefing_markdown = ""
+        if not briefing_markdown or not str(briefing_markdown).strip():
+            from hydra_api.briefing_config import MANDATORY_CORPUS_LIMITATION
+
+            briefing_markdown = (
+                "# Limitación\n\n"
+                "No se pudo generar el briefing final. "
+                "La respuesta del sintetizador estaba vacía.\n\n"
+                f"{MANDATORY_CORPUS_LIMITATION}"
+            )
 
         # If evidence is unsupported, add a limitation note.
         if not council_review.evidence_supported:
@@ -243,40 +307,65 @@ class CouncilService:
 # ---------------------------------------------------------------------------
 
 
-def create_council_service() -> CouncilService:
+def create_council_service(
+    settings: Any = None,
+    chat_model: Any = None,
+    review_model: Any = None,
+) -> CouncilService:
     """Lazy factory that constructs a real ``CouncilService``.
 
-    Uses ``HYDRA_CHAT_MODEL`` for the analyst and synthesizer chains,
-    and ``HYDRA_REVIEW_MODEL`` for the reviewer chains.
-    Reads ``MODEL_API_KEY`` and ``MODEL_API_BASE_URL`` from the
-    existing ``Settings`` class.
+    Parameters
+    ----------
+    settings : Settings | None
+        Optional Settings instance.  When ``None``, ``get_settings()``
+        is called inside this function (only if models are not injected).
+    chat_model : object | None
+        Optional chat model instance for analyst/final synthesizer.
+        When ``None``, uses ``HYDRA_CHAT_MODEL`` from Settings.
+    review_model : object | None
+        Optional chat model instance for evidence/risk reviewers.
+        When ``None``, uses ``HYDRA_REVIEW_MODEL`` from Settings.
 
+    Returns
+    -------
+    CouncilService
+        A fully wired council service.
+
+    Notes
+    -----
     This function is safe to call without a ``.env`` file — it
     will raise if required configuration is missing, but it
     does **not** perform any network calls at import time.
     """
-    from hydra_api.config import get_settings
-    from hydra_api.model_client import build_chain
+    from hydra_api.model_client import create_chat_model
 
-    settings = get_settings()
+    needs_settings = (chat_model is None or review_model is None)
+
+    if needs_settings:
+        from hydra_api.config import get_settings
+        settings = get_settings()
 
     # Build LangChain chains for each council role.
-    analyst_chain = build_chain(
-        prompt_builder=None,  # prompt built inline in CouncilService.run
-        model_name=settings.hydra_chat_model,
-    )
-    evidence_reviewer_chain = build_chain(
-        prompt_builder=None,
-        model_name=settings.hydra_review_model,
-    )
-    risk_reviewer_chain = build_chain(
-        prompt_builder=None,
-        model_name=settings.hydra_review_model,
-    )
-    final_synthesizer_chain = build_chain(
-        prompt_builder=None,
-        model_name=settings.hydra_chat_model,
-    )
+    if chat_model is not None:
+        analyst_chain = chat_model
+        final_synthesizer_chain = chat_model
+    else:
+        analyst_chain = create_chat_model(
+            model_name=settings.hydra_chat_model,
+            settings=settings,
+        )
+        final_synthesizer_chain = analyst_chain
+
+    if review_model is not None:
+        evidence_reviewer_chain = review_model
+        risk_reviewer_chain = review_model
+    else:
+        review_model_inst = create_chat_model(
+            model_name=settings.hydra_review_model,
+            settings=settings,
+        )
+        evidence_reviewer_chain = review_model_inst
+        risk_reviewer_chain = review_model_inst
 
     return CouncilService(
         analyst_chain=analyst_chain,

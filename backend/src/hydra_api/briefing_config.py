@@ -19,11 +19,11 @@ MANDATORY_CORPUS_LIMITATION: str = (
 
 # Required sections that must appear in the final briefing markdown.
 REQUIRED_BRIEFING_SECTIONS: list[str] = [
-    "Resumen ejecutivo",
-    "Análisis narrativo",
-    "Evaluación de evidencia",
-    "Nivel de riesgo",
+    "Pregunta",
+    "Hallazgos con evidencia",
+    "Riesgo",
     "Limitaciones",
+    "Fuentes recuperadas",
 ]
 
 # Maximum character count for evidence snippets included in briefing output.

@@ -72,12 +72,14 @@ def briefing(request: BriefingRequest) -> BriefingResponse:
     try:
         if briefing_service is None:
             from hydra_api.briefing_service import BriefingService
+            from hydra_api.council_service import create_council_service
             from hydra_api.rag_service import create_query_service
 
             query_service = create_query_service()
+            council_service = create_council_service()
             briefing_service = BriefingService(
                 query_service=query_service,
-                council_service=None,
+                council_service=council_service,
             )
             app.state.briefing_service = briefing_service
 
