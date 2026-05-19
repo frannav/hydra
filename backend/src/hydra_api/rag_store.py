@@ -53,7 +53,16 @@ def fetch_chunks_without_embeddings(
     )
     rows = cur.fetchall()
     columns = [desc[0] for desc in cur.description]
-    return [dict(zip(columns, row)) for row in rows]
+    result = []
+    for row in rows:
+        row_dict = dict(zip(columns, row))
+        metadata = row_dict.get("metadata")
+        if metadata is None:
+            row_dict["metadata"] = {}
+        elif not isinstance(metadata, dict):
+            raise ValueError("metadata must be a dict or null")
+        result.append(row_dict)
+    return result
 
 
 # ---------------------------------------------------------------------------

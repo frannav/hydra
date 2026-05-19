@@ -1,0 +1,59 @@
+{
+  "features": [
+    {
+      "id": "milestone-1-deps-constants-validation",
+      "description": "TASK-RAG-001 to 003: Add langchain-core, langchain-openai, pgvector to pyproject.toml. Create rag_config.py with EMBEDDING_DIMENSION=4096, DEFAULT_TOP_K=5, EVIDENCE_SNIPPET_CHARS. Enhance QueryRequest: reject empty questions, validate top_k >= 1, default 5.",
+      "skillName": "backend-worker",
+      "milestone": "rag-deps-validation",
+      "preconditions": ["backend/pyproject.toml exists with uv project config", "backend/src/hydra_api/ directory exists"],
+      "expectedBehavior": ["langchain-core, langchain-openai, pgvector in pyproject.toml, no neo4j", "rag_config.py exports EMBEDDING_DIMENSION=4096, DEFAULT_TOP_K=5, EVIDENCE_SNIPPET_CHARS>0", "db_schema.py contains vector(4096)", "QueryRequest(question='texto') uses top_k=5, rejects empty/question-only-space, rejects top_k=0"],
+      "verificationSteps": ["cd backend && uv sync", "cd backend && uv run python -c \"from langchain_core.runnables import RunnableLambda; from langchain_openai import ChatOpenAI, OpenAIEmbeddings; import pgvector; print('rag deps ok')\"", "cd backend && uv run python -c \"from hydra_api.rag_config import EMBEDDING_DIMENSION, DEFAULT_TOP_K, EVIDENCE_SNIPPET_CHARS; assert EMBEDDING_DIMENSION==4096 and DEFAULT_TOP_K==5 and EVIDENCE_SNIPPET_CHARS>0\"", "cd backend && uv run python -c \"from pydantic import ValidationError; from hydra_api.schemas import QueryRequest; assert QueryRequest(question='q').top_k==5\"", "cd backend && uv run python -c 'from pydantic import ValidationError; from hydra_api.schemas import QueryRequest; bad=0; exec(\"try: QueryRequest(question=\\\"   \\\")\\nexcept ValidationError: bad+=1\\ntry: QueryRequest(question=\\\"x\\\", top_k=0)\\nexcept ValidationError: bad+=1\\nassert bad==2\\nprint(\\\"invalid query rejected\\\")\")'"],
+      "fulfills": ["VAL-RAG-001", "VAL-RAG-002", "VAL-RAG-003", "VAL-RAG-004"],
+      "status": "pending"
+    },
+    {
+      "id": "milestone-2-embeddings-indexing",
+      "description": "TASK-RAG-004 to 009: Create rag_embeddings.py (create_embedding_model, validate_embedding_vector). Create rag_store.py (fetch_chunks_without_embeddings, update_chunk_embedding). Create rag_indexing.py (RagIndexingService with injectable deps). All lazy imports, no side effects, fakes for testing.",
+      "skillName": "backend-worker",
+      "milestone": "rag-embeddings-indexing",
+      "preconditions": ["rag_config.py exists with EMBEDDING_DIMENSION=4096", "schemas.py has Settings, QueryRequest"],
+      "expectedBehavior": ["rag_embeddings imports without .env/DB, create_embedding_model constructs with fake env vars, validate_embedding_vector enforces 4096", "rag_store imports without DB, no CREATE TABLE, fetch_chunks_without_embeddings has embedding IS NULL query, update_chunk_embedding has UPDATE document_chunks", "RagIndexingService importable with injectable connection_factory and embedding_model"],
+      "verificationSteps": ["cd backend && uv run python -c \"import hydra_api.rag_embeddings as m; assert hasattr(m, 'create_embedding_model')\"", "cd backend && MODEL_API_KEY=fake MODEL_API_BASE_URL=https://example.invalid/v1 uv run python -c \"from hydra_api.rag_embeddings import create_embedding_model; emb=create_embedding_model(); assert emb is not None\"", "cd backend && uv run python -c \"from hydra_api.rag_embeddings import validate_embedding_vector; assert len(validate_embedding_vector([0.0]*4096))==4096\"", "cd backend && uv run python -c \"import hydra_api.rag_store as s; print('rag store import ok')\"", "cd backend && uv run python -c \"from hydra_api.rag_store import fetch_chunks_without_embeddings; print(callable(fetch_chunks_without_embeddings))\"", "cd backend && uv run python -c \"from hydra_api.rag_store import update_chunk_embedding; print(callable(update_chunk_embedding))\"", "cd backend && uv run python -c \"import hydra_api.rag_indexing as m; assert hasattr(m, 'RagIndexingService')\"", "cd backend && uv run python -c \"from hydra_api.rag_indexing import RagIndexingService; service=RagIndexingService(connection_factory=lambda: None, embedding_model=object()); print(service.__class__.__name__)\""],
+      "fulfills": ["VAL-RAG-005", "VAL-RAG-006", "VAL-RAG-007", "VAL-RAG-008", "VAL-RAG-009", "VAL-RAG-010", "VAL-RAG-011"],
+      "status": "pending"
+    },
+    {
+      "id": "milestone-3-vector-search-retriever",
+      "description": "TASK-RAG-010 to 012: Create search_similar_chunks in rag_store.py using <=>' coseno distance on document_chunks JOIN documents. Create rag_retriever.py with to_retrieved_document (truncates evidence) and create_retriever_runnable LCEL component.",
+      "skillName": "backend-worker",
+      "milestone": "rag-vector-search-retriever",
+      "preconditions": ["rag_store.py exists with fetch_chunks_without_embeddings", "rag_embeddings.py exists with validate_embedding_vector", "schemas.py has RetrievedDocument"],
+      "expectedBehavior": ["search_similar_chunks references document_chunks, documents, embedding IS NOT NULL, <=>", "to_retrieved_document truncates evidence to EVIDENCE_SNIPPET_CHARS", "create_retriever_runnable returns runnable with injectable deps"],
+      "verificationSteps": ["cd backend && uv run python -c \"from hydra_api.rag_store import search_similar_chunks; print(callable(search_similar_chunks))\"", "cd backend && uv run python -c \"import inspect; from hydra_api import rag_store; src=inspect.getsource(rag_store.search_similar_chunks); assert 'document_chunks' in src and 'documents' in src and 'embedding IS NOT NULL' in src and '<=>' in src\"", "cd backend && uv run python -c \"import hydra_api.rag_retriever as r; assert hasattr(r, 'to_retrieved_document')\"", "cd backend && uv run python -c \"from hydra_api.rag_retriever import to_retrieved_document; d=to_retrieved_document({'document_id':'doc','chunk_id':'c','title':'T','source':'S','score':0.5,'content':'x'*2000}); assert d.document_id=='doc' and len(d.evidence)<2000\"", "cd backend && uv run python -c \"from hydra_api.rag_retriever import create_retriever_runnable; r=create_retriever_runnable(connection_factory=lambda: None, embedding_model=object()); assert r is not None\""],
+      "fulfills": ["VAL-RAG-012", "VAL-RAG-013", "VAL-RAG-014"],
+      "status": "pending"
+    },
+    {
+      "id": "milestone-4-answering-service-endpoint",
+      "description": "TASK-RAG-013 to 017: Create rag_answering.py (build_answer_prompt, create_chat_model, create_answer_chain, build_no_context_response). Create rag_service.py (QueryService orchestrating retrieval + answering). Add POST /query endpoint in main.py with fake injection support.",
+      "skillName": "backend-worker",
+      "milestone": "rag-answering-service-endpoint",
+      "preconditions": ["rag_retriever.py exists with create_retriever_runnable", "schemas.py has QueryRequest, QueryResponse, RetrievedDocument"],
+      "expectedBehavior": ["rag_answering imports without side effects, create_chat_model constructs with fake env, build_no_context_response returns QueryResponse with limitations", "QueryService orchestrates empty retriever → no-context response with limitations and trace_id", "GET /health returns 200, POST /query with fake service returns 200, OpenAPI includes /query"],
+      "verificationSteps": ["cd backend && uv run python -c \"import hydra_api.rag_answering as a; assert hasattr(a, 'create_answer_chain')\"", "cd backend && MODEL_API_KEY=fake MODEL_API_BASE_URL=https://example.invalid/v1 uv run python -c \"from hydra_api.rag_answering import create_chat_model; model=create_chat_model(); assert model is not None\"", "cd backend && uv run python -c \"from hydra_api.rag_answering import build_no_context_response; r=build_no_context_response('q','trace-local'); assert r.retrieved_documents==[] and r.limitations and r.trace_id=='trace-local'\"", "cd backend && uv run python -c \"from hydra_api.rag_service import QueryService; print(callable(QueryService))\"", "cd backend && uv run python -c \"from hydra_api.rag_service import QueryService; from hydra_api.schemas import QueryRequest; s=QueryService(retriever=lambda q,k: [], answer_chain=lambda *a, **k: 'x'); r=s.query(QueryRequest(question='q')); assert r.retrieved_documents==[] and r.limitations and r.trace_id\"", "cd backend && uv run python -c \"from fastapi.testclient import TestClient; from hydra_api.main import app; assert TestClient(app).get('/health').json()['status']=='ok'\"", "cd backend && uv run python -c \"from fastapi.testclient import TestClient; from hydra_api.main import app; from hydra_api.schemas import QueryResponse; Fake=type('Fake', (), {'query': lambda self, request: QueryResponse(answer='Sin contexto suficiente.', retrieved_documents=[], limitations=['Corpus sin embeddings.'], trace_id='trace-test')}); app.state.query_service=Fake(); res=TestClient(app).post('/query', json={'question':'q','top_k':5}); assert res.status_code==200 and res.json()['trace_id']=='trace-test'; del app.state.query_service\"", "cd backend && uv run python -c \"from fastapi.testclient import TestClient; from hydra_api.main import app; schema=TestClient(app).get('/openapi.json').json(); assert '/query' in schema['paths']\""],
+      "fulfills": ["VAL-RAG-015", "VAL-RAG-016", "VAL-RAG-017", "VAL-RAG-018", "VAL-RAG-019"],
+      "status": "pending"
+    },
+    {
+      "id": "milestone-5-cross-area-integration",
+      "description": "Cross-area integration: Full pipeline with fakes. No Neo4j anywhere. Empty retriever → no-context without model call.",
+      "skillName": "backend-worker",
+      "milestone": "rag-cross-area",
+      "preconditions": ["All previous milestones complete"],
+      "expectedBehavior": ["Full pipeline works with fakes: empty retriever → no-context response", "Fake retriever with docs → answer chain invoked", "No Neo4j references in any RAG module"],
+      "verificationSteps": ["cd backend && uv run python -c \"from hydra_api.rag_service import QueryService; from hydra_api.schemas import QueryRequest; s=QueryService(retriever=lambda q,k: [], answer_chain=lambda *a, **k: 'x'); r=s.query(QueryRequest(question='q')); assert r.retrieved_documents==[] and r.limitations; print('full pipeline no-context ok')\"", "grep -r 'neo4j' backend/src/hydra_api/rag_*.py backend/pyproject.toml || echo 'no neo4j references found'"],
+      "fulfills": ["VAL-CROSS-RAG-001", "VAL-CROSS-RAG-002"],
+      "status": "pending"
+    }
+  ]
+}

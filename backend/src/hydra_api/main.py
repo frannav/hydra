@@ -38,15 +38,17 @@ def query(request: QueryRequest) -> QueryResponse:
     """Answer a question using the RAG pipeline.
 
     The service is injected via ``app.state.query_service`` for
-    testability.  When not injected, returns a 503 error.
+    testability.  When not injected, constructs the real service
+    lazily at request time.
     """
     query_service = getattr(app.state, "query_service", None)
-    if query_service is None:
-        from hydra_api.rag_service import create_query_service
-
-        query_service = create_query_service()
-
     try:
+        if query_service is None:
+            from hydra_api.rag_service import create_query_service
+
+            query_service = create_query_service()
+            app.state.query_service = query_service
+
         return query_service.query(request)
     except Exception as exc:
         raise HTTPException(

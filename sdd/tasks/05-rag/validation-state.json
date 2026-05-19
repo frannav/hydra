@@ -1,0 +1,25 @@
+{
+  "assertions": {
+    "VAL-RAG-001": { "status": "pending" },
+    "VAL-RAG-002": { "status": "pending" },
+    "VAL-RAG-003": { "status": "pending" },
+    "VAL-RAG-004": { "status": "pending" },
+    "VAL-RAG-005": { "status": "pending" },
+    "VAL-RAG-006": { "status": "pending" },
+    "VAL-RAG-007": { "status": "pending" },
+    "VAL-RAG-008": { "status": "pending" },
+    "VAL-RAG-009": { "status": "pending" },
+    "VAL-RAG-010": { "status": "pending" },
+    "VAL-RAG-011": { "status": "pending" },
+    "VAL-RAG-012": { "status": "pending" },
+    "VAL-RAG-013": { "status": "pending" },
+    "VAL-RAG-014": { "status": "pending" },
+    "VAL-RAG-015": { "status": "pending" },
+    "VAL-RAG-016": { "status": "pending" },
+    "VAL-RAG-017": { "status": "pending" },
+    "VAL-RAG-018": { "status": "pending" },
+    "VAL-RAG-019": { "status": "pending" },
+    "VAL-CROSS-RAG-001": { "status": "pending" },
+    "VAL-CROSS-RAG-002": { "status": "pending" }
+  }
+}
