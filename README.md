@@ -164,6 +164,24 @@ cd backend && uv run python -m hydra_api.extraction --validate-json data/fixture
 > de la ontología y los fixtures sintéticos. La extracción real
 > requiere un corpus aprobado y claves de modelo configuradas.
 
+## Council y Briefing (Misión 06)
+
+El council de 4 roles (analista narrativo, revisor de evidencia, revisor de riesgo, sintetizador final) genera briefings trazables con evidencias, limitaciones y nivel de riesgo.
+
+Endpoint `POST /briefing`:
+
+```bash
+# Health check
+curl http://localhost:8000/health
+
+# Briefing con servicio fake (requiere inyección manual del servicio)
+curl -X POST http://localhost:8000/briefing \
+  -H "Content-Type: application/json" \
+  -d '{"question": "¿Qué narrativas dominan el corpus?", "top_k": 5, "use_council": true}'
+```
+
+> **no ejecuta modelos**: el endpoint requiere un servicio real inyectado. Sin `app.state.briefing_service` configurado, devuelve un error seguro. Las verificaciones locales usan fakes.
+
 ## Corpus
 
 HYDRA usa un corpus cerrado de documentos públicos. La ingesta se basa en un archivo de manifiesto:
