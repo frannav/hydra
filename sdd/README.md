@@ -87,6 +87,10 @@ El flujo detallado para ejecutar tareas con Droid/Qwen 3.6, tanto con task packe
 
 - `09-droid-execution-workflow.md`
 
+Para revisar y atomizar una carpeta de tareas antes de lanzarla como Mission, usar:
+
+- `task-atomization-prompt.md`
+
 ## Numeracion de dominios
 
 La numeracion canonica de ejecucion vive en `sdd/tasks/`.

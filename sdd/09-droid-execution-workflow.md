@@ -78,6 +78,20 @@ Reglas:
 - No mezclar dominios si no hace falta.
 - No pedir a Droid "implementa el backend"; pedir una tarea concreta.
 
+### Preflight: atomizar tareas antes de una Mission
+
+Antes de preparar una Mission larga, revisar la carpeta de tareas con el prompt reutilizable:
+
+- `task-atomization-prompt.md`
+
+Objetivo:
+
+- dividir tareas grandes;
+- anadir edge cases y stop conditions;
+- documentar errores probables a evitar;
+- confirmar allowed files y comandos de verificacion;
+- bloquear tareas que dependan de datos reales, claves, corpus aprobado, DB viva o decisiones humanas.
+
 ## Paso 2: Codex crea el task packet
 
 Antes de usar Droid, Codex debe generar un bloque listo para pegar.
