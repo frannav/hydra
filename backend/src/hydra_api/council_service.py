@@ -189,13 +189,14 @@ class CouncilService:
         self.final_synthesizer_chain = final_synthesizer_chain
 
     @staticmethod
-    def _invoke_chain(chain: Any, prompt: str) -> str:
+    def _invoke_chain(chain: Any, prompt: str) -> Any:
         """Invoke a chain safely, supporting fakes and LangChain objects.
 
         - If the chain has ``.invoke()``, call ``chain.invoke(prompt)``.
         - Otherwise call ``chain(prompt)`` (for fake callables).
         - Extract ``.content`` from the response if present.
-        - Fall back to ``str(response)`` for non-textual outputs.
+        - Preserve structured responses (dict, list) without conversion.
+        - Fall back to ``str(response)`` for non-structured outputs.
 
         Parameters
         ----------
@@ -206,8 +207,8 @@ class CouncilService:
 
         Returns
         -------
-        str
-            The response text.
+        Any
+            The raw response — may be str, dict, list, or other type.
         """
         if hasattr(chain, "invoke"):
             response = chain.invoke(prompt)
@@ -216,6 +217,9 @@ class CouncilService:
 
         if hasattr(response, "content"):
             return str(response.content)
+        # Preserve structured responses (dict, list) for reviewers.
+        if isinstance(response, (dict, list)):
+            return response
         return str(response)
 
     def run(
@@ -255,9 +259,8 @@ class CouncilService:
         analyst_prompt = build_narrative_analyst_prompt(
             question, retrieved_documents
         )
-        analyst_draft = self._invoke_chain(self.analyst_chain, analyst_prompt)
-        if not analyst_draft:
-            analyst_draft = ""
+        analyst_raw = self._invoke_chain(self.analyst_chain, analyst_prompt)
+        analyst_draft = str(analyst_raw) if analyst_raw else ""
 
         # Step 2: Evidence Reviewer
         evidence_prompt = build_evidence_reviewer_prompt(
