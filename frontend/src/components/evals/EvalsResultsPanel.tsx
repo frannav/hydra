@@ -153,7 +153,7 @@ export default function EvalsResultsPanel({
                 </div>
 
                 {/* Metrics as key-value pairs */}
-                {Object.keys(result.metrics).length > 0 && (
+                {result.metrics && Object.keys(result.metrics).length > 0 && (
                   <div className="mb-3">
                     <h4 className="mb-2 text-xs font-medium text-gray-400">
                       Métricas

@@ -35,7 +35,7 @@ export default function RetrievedDocuments({ documents }: RetrievedDocumentsProp
             <span className="text-sm font-medium text-gray-200">
               {doc.title || doc.document_id}
             </span>
-            {doc.score !== null && doc.score !== undefined && (
+            {typeof doc.score === "number" && (
               <span className="text-xs text-blue-400">
                 score: {doc.score.toFixed(2)}
               </span>

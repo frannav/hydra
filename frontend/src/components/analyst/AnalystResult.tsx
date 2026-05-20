@@ -34,9 +34,9 @@ export default function AnalystResult({ response }: AnalystResultProps) {
       {/* Retrieved documents */}
       <div>
         <h2 className="mb-2 text-sm font-semibold text-gray-200">
-          Documentos recuperados ({response.retrieved_documents.length})
+          Documentos recuperados ({(response.retrieved_documents ?? []).length})
         </h2>
-        <RetrievedDocuments documents={response.retrieved_documents} />
+        <RetrievedDocuments documents={response.retrieved_documents ?? []} />
       </div>
 
       {/* Evidence panel */}
