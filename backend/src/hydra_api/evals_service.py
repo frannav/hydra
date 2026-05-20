@@ -21,7 +21,7 @@ import pathlib
 import uuid
 from typing import Any, Callable
 
-from .evals_config import EVAL_CASES_PATH, EVAL_RESULTS_PATH
+from .evals_config import EVAL_CASES_PATH, EVAL_RESULTS_PATH, resolve_eval_cases_path, resolve_eval_results_path
 from .evals_judges import GroundednessJudge, parse_groundedness_label
 from .evals_metrics import (
     coordination_caution,
@@ -45,10 +45,16 @@ from .schemas import (
 
 
 # ---------------------------------------------------------------------------
-# Allowed base directory for eval case files
+# Allowed base directories for eval case files and export
 # ---------------------------------------------------------------------------
 
-_ALLOWED_BASE: pathlib.Path = pathlib.Path("data")
+# The allowed base is "data/" relative to the backend project root.
+# We resolve from the module's parent (backend/src/) going up one level
+# to get to backend/, then into data/.
+_module_dir = pathlib.Path(__file__).resolve().parent  # backend/src/hydra_api/
+_backend_root = _module_dir.parent.parent  # backend/
+_ALLOWED_EVALS_BASE = _backend_root / "data" / "evals"
+_ALLOWED_EXPORT_BASE = _backend_root / "data" / "outputs"
 
 
 # ---------------------------------------------------------------------------
@@ -83,7 +89,7 @@ def load_eval_cases(path: str | pathlib.Path | None = None) -> list[EvalCase]:
     if path is None:
         path = EVAL_CASES_PATH
 
-    resolved = pathlib.Path(path)
+    resolved = resolve_eval_cases_path(path)
 
     # --- Reject path traversal in the original string -------------------
     if ".." in resolved.parts:
@@ -92,12 +98,12 @@ def load_eval_cases(path: str | pathlib.Path | None = None) -> list[EvalCase]:
     # --- Resolve to absolute for safety checks --------------------------
     resolved = resolved.resolve()
 
-    # --- Ensure the resolved path is under the allowed base -------------
+    # --- Ensure the resolved path is under the allowed evals base -------
     try:
-        resolved.relative_to(_ALLOWED_BASE.resolve())
+        resolved.relative_to(_ALLOWED_EVALS_BASE.resolve())
     except ValueError:
         raise ValueError(
-            f"Eval cases path must be relative to '{_ALLOWED_BASE}': {path}"
+            f"Eval cases path must be under the allowed evals directory: {path}"
         )
 
     # --- Read and parse JSON --------------------------------------------
@@ -334,16 +340,34 @@ class EvalService:
         EvalRunResponse
             A response with ``run_id``, ``total_cases``, ``results_path``,
             and ``trace_id`` (from the first result, if any).
+
+        Raises
+        ------
+        ValueError
+            When requested case_ids are not found in the case set, or
+            when ``export_eval_results`` fails.
         """
-        # Use request top_k if provided, otherwise fall back to constructor default.
+        # Use request top_k for all operations.
         top_k = request.top_k
 
-        # Load all cases and filter to requested case_ids.
+        # Load all cases and build a lookup by id.
         all_cases = self.case_loader()
-        requested_ids = set(request.case_ids)
+        case_by_id: dict[str, EvalCase] = {c.id: c for c in all_cases}
 
-        # Filter cases to only those requested.
-        cases = [c for c in all_cases if c.id in requested_ids]
+        # Reject requested IDs that don't exist.
+        missing = [cid for cid in request.case_ids if cid not in case_by_id]
+        if missing:
+            raise ValueError(
+                f"Eval case(s) not found: {missing}"
+            )
+
+        # Deduplicate while preserving order.
+        seen: set[str] = set()
+        ordered_ids: list[str] = []
+        for cid in request.case_ids:
+            if cid not in seen:
+                seen.add(cid)
+                ordered_ids.append(cid)
 
         # Create a unique run_id.
         run_id = f"eval_run_{uuid.uuid4().hex[:12]}"
@@ -356,7 +380,9 @@ class EvalService:
         results: list[EvalResult] = []
         first_trace_id: str | None = None
 
-        for case in cases:
+        for case_id in ordered_ids:
+            case = case_by_id[case_id]
+
             # Build the query request.
             query_request = QueryRequest(question=case.question, top_k=top_k)
 
@@ -375,7 +401,7 @@ class EvalService:
                     evidence_fragments.append(str(doc.get("evidence", "")))
 
             # --- Compute metrics ---
-            metrics = self._compute_metrics(case, query_response, evidence_fragments)
+            metrics = self._compute_metrics(case, query_response, evidence_fragments, top_k)
 
             # --- Run the judge for groundedness ---
             try:
@@ -405,13 +431,23 @@ class EvalService:
             if first_trace_id is None and trace_id is not None:
                 first_trace_id = trace_id
 
-        # Determine the results path.
-        results_path = EVAL_RESULTS_PATH
+        # --- Export results to local JSON backup ---
+        try:
+            export_eval_results(
+                type("Run", (), {
+                    "run_id": run_id,
+                    "results": results,
+                    "trace_id": first_trace_id,
+                })(),
+            )
+        except Exception as exc:
+            # If export fails, raise a safe error so the run is not silently 200.
+            raise ValueError(f"Failed to export eval results: {exc}")
 
         return EvalRunResponse(
             run_id=run_id,
             total_cases=len(results),
-            results_path=results_path,
+            results_path=EVAL_RESULTS_PATH,
             trace_id=first_trace_id,
             results=results,
         )
@@ -421,6 +457,7 @@ class EvalService:
         case: EvalCase,
         query_response: QueryResponse,
         evidence_fragments: list[str],
+        top_k: int,
     ) -> EvalMetrics:
         """Compute all metrics for a single eval case.
 
@@ -432,30 +469,36 @@ class EvalService:
             The response from the query service.
         evidence_fragments : list[str]
             Evidence text fragments from retrieved documents.
+        top_k : int
+            The top_k value used for this query.
 
         Returns
         -------
         EvalMetrics
             Computed metrics for this case.
         """
-        # Precision@k
+        # Precision@k — use the request top_k.
         retrieved_for_precision = query_response.retrieved_documents
         try:
             precision = precision_at_k(
                 case.expected_documents,
                 retrieved_for_precision,
-                self._top_k,
+                top_k,
             )
         except (ValueError, TypeError):
             precision = 0.0
 
-        # JSON validity — validate against Extraction schema.
-        # We use the answer text as a potential JSON payload.
-        json_result = json_validity(query_response.answer, Extraction)
+        # JSON validity — only when the case has the json_validity tag.
+        case_tags = set(case.tags)
+        json_result: JsonValidityResult | None = None
+        if "json_validity" in case_tags or "extraction_json" in case_tags:
+            json_result = json_validity(query_response.answer, Extraction)
 
-        # Ontology mapping — only if we have extraction-like data.
-        # For now, skip unless we have actual extraction data.
+        # Ontology mapping — only when the case has the ontology_mapping tag.
         ontology_passed: bool | None = None
+        if "ontology_mapping" in case_tags:
+            # Would need extraction-like data; skip for now.
+            pass
 
         # Coordination caution
         coord_result = coordination_caution(
@@ -466,9 +509,15 @@ class EvalService:
         # Since QueryResponse doesn't have metadata, we use empty dict.
         latency_result = latency_cost_metrics({})
 
+        # Determine json_validity value: only fail if the case explicitly
+        # tags for json_validity and the check fails.
+        json_validity_value = True  # default: not applicable for normal cases
+        if json_result is not None:
+            json_validity_value = json_result.passed
+
         return EvalMetrics(
             precision_at_k=precision,
-            json_validity=json_result.passed,
+            json_validity=json_validity_value,
             groundedness="pass",  # Will be overridden by judge
             ontology_mapping=ontology_passed,
             coordination_caution=coord_result.passed,
@@ -508,7 +557,7 @@ class EvalService:
 # export_eval_results
 # ---------------------------------------------------------------------------
 
-_ALLOWED_EXPORT_BASE: pathlib.Path = pathlib.Path("data")
+
 
 
 def export_eval_results(
@@ -536,21 +585,21 @@ def export_eval_results(
     if path is None:
         path = EVAL_RESULTS_PATH
 
-    resolved = pathlib.Path(path)
+    resolved = resolve_eval_results_path(path)
 
-    # Reject path traversal.
+    # --- Reject path traversal in the original string -------------------
     if ".." in resolved.parts:
         raise ValueError(f"Path traversal not allowed in export path: {path}")
 
-    # Resolve to absolute for safety checks.
+    # --- Resolve to absolute for safety checks --------------------------
     resolved = resolved.resolve()
 
-    # Ensure the resolved path is under the allowed base.
+    # --- Ensure the resolved path is under the allowed export base ------
     try:
         resolved.relative_to(_ALLOWED_EXPORT_BASE.resolve())
     except ValueError:
         raise ValueError(
-            f"Eval results export path must be relative to '{_ALLOWED_EXPORT_BASE}': {path}"
+            f"Eval results export path must be under the allowed outputs directory: {path}"
         )
 
     # Create the directory if it doesn't exist.

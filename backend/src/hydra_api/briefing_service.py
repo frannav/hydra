@@ -237,9 +237,9 @@ class BriefingService:
         # Resolve emitter (lazy fallback to local no-op).
         emitter = self.emitter
         if emitter is None:
-            from hydra_api.observability import _LocalEmitter
+            from hydra_api.observability import create_observability_emitter
 
-            emitter = _LocalEmitter()
+            emitter = create_observability_emitter()
 
         trace_metadata: dict[str, Any] = {
             "use_council": request.use_council,

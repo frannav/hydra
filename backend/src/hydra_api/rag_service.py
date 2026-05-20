@@ -76,9 +76,9 @@ class QueryService:
         # Start a trace via the injected emitter.
         emitter = self.emitter
         if emitter is None:
-            from hydra_api.observability import _LocalEmitter
+            from hydra_api.observability import create_observability_emitter
 
-            emitter = _LocalEmitter()
+            emitter = create_observability_emitter()
 
         # Build safe metadata for the trace (no full documents or secrets).
         from hydra_api.observability import safe_preview, MAX_QUESTION_PREVIEW_CHARS

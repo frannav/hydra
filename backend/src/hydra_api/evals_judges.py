@@ -64,6 +64,8 @@ def build_groundedness_prompt(
     grounded in the provided *evidence_fragments* and returns a label
     (``pass``, ``warning``, or ``fail``).
 
+    Answer text is truncated to 1000 characters to avoid oversized prompts.
+
     Parameters
     ----------
     answer : str
@@ -77,6 +79,10 @@ def build_groundedness_prompt(
         A prompt string that includes the answer and evidence
         fragments with a request for a groundedness label.
     """
+    # Truncate answer to avoid oversized prompts.
+    max_answer_chars = 1000
+    truncated_answer = answer[:max_answer_chars] + ("..." if len(answer) > max_answer_chars else "")
+
     evidence_text = "\n".join(
         f"- {frag[:500]}" for frag in evidence_fragments
     ) if evidence_fragments else "(sin evidencia)"
@@ -85,7 +91,7 @@ def build_groundedness_prompt(
         "Eres un juez de groundedness (fundamentación). "
         "Evalúa si la respuesta está fundamentada en la evidencia proporcionada.\n\n"
         "Respuesta:\n"
-        f"{answer}\n\n"
+        f"{truncated_answer}\n\n"
         "Evidencia recuperada:\n"
         f"{evidence_text}\n\n"
         "Devuelve UNO de los siguientes labels:\n"
@@ -133,5 +139,8 @@ class GroundednessJudge:
         str
             A groundedness label: ``"pass"``, ``"warning"``, or ``"fail"``.
         """
-        # Default fake behavior: always pass.
+        # With no evidence, default to warning (not pass).
+        if not evidence_fragments or not any(str(e).strip() for e in evidence_fragments):
+            return "warning"
+        # Default fake behavior with evidence: pass.
         return "pass"

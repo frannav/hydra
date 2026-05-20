@@ -6,6 +6,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from hydra_api.errors import HydraError, http_exception_handler, hydra_error_handler
+from hydra_api.evals_config import EVAL_RESULTS_PATH
 from hydra_api.logging import setup_logging
 from hydra_api.schemas import (
     BriefingRequest,
@@ -116,9 +117,30 @@ def evals_run(request: EvalRunRequest) -> EvalRunResponse:
                 status_code=500,
                 detail="Eval service is not configured.",
             )
-        return eval_service.run(request)
+        result = eval_service.run(request)
+
+        # Coerce the result to a proper EvalRunResponse.
+        # Handle fakes that may not have all fields.
+        results = getattr(result, "results", [])
+        total_cases = getattr(result, "total_cases", len(results))
+        results_path = getattr(result, "results_path", EVAL_RESULTS_PATH)
+        trace_id = getattr(result, "trace_id", None)
+        run_id = getattr(result, "run_id", "")
+
+        return EvalRunResponse(
+            run_id=run_id,
+            total_cases=total_cases,
+            results_path=results_path,
+            trace_id=trace_id,
+            results=results,
+        )
     except HTTPException:
         raise
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=400,
+            detail=str(exc),
+        )
     except Exception:
         raise HTTPException(
             status_code=500,
@@ -136,13 +158,12 @@ def evals_results() -> EvalResultsResponse:
     Errors are surfaced with a generic message — no stack traces
     or internal details are exposed to the client.
     """
-    from hydra_api.evals_config import EVAL_RESULTS_PATH
+    from hydra_api.evals_config import resolve_eval_results_path
 
     try:
         import json
-        import pathlib
 
-        results_path = pathlib.Path(EVAL_RESULTS_PATH)
+        results_path = resolve_eval_results_path()
         if not results_path.exists():
             return EvalResultsResponse(run_id="", results=[])
 

@@ -233,6 +233,8 @@ def create_observability_emitter(
     - When *langfuse_public_key* and *langfuse_secret_key* are both
       non-empty, attempts to create a Langfuse-backed emitter.
     - When either key is missing or empty, returns a local no-op emitter.
+    - When *settings* is ``None`` and Langfuse keys are configured via
+      environment variables, attempts to load them lazily.
 
     This function never raises and never imports Langfuse at module level.
     """
@@ -242,6 +244,17 @@ def create_observability_emitter(
     if settings is not None:
         public_key = getattr(settings, "langfuse_public_key", "") or ""
         secret_key = getattr(settings, "langfuse_secret_key", "") or ""
+    else:
+        # Try to load settings lazily — only if Langfuse keys are set.
+        try:
+            from .config import get_settings
+
+            settings = get_settings()
+            public_key = getattr(settings, "langfuse_public_key", "") or ""
+            secret_key = getattr(settings, "langfuse_secret_key", "") or ""
+        except Exception:
+            # Missing MODEL_API_KEY or other config error — fall back to local.
+            pass
 
     if public_key and secret_key:
         return _LangfuseEmitter(public_key, secret_key, settings)
