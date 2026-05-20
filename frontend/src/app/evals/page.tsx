@@ -5,6 +5,8 @@
  * and running evals via POST /evals/run. No auto-calls on page load.
  *
  * Shows run_id, results_path, and trace_id from the POST /evals/run response.
+ * EvalsResultsPanel consumes GET /evals/results and shows detailed results.
+ * Run result is preserved until new valid results arrive.
  * Does not call any invented endpoints.
  */
 
@@ -12,10 +14,10 @@
 
 import { useState, useCallback } from "react";
 import { runEvals } from "@/lib/api-client";
-import type { EvalRunRequest, EvalRunResponse } from "@/lib/api-types";
+import type { EvalRunRequest, EvalRunResponse, EvalResultsResponse } from "@/lib/api-types";
 import StateBlock from "@/components/StateBlock";
 import EvalsRunForm from "@/components/evals/EvalsRunForm";
-import TraceId from "@/components/TraceId";
+import EvalsResultsPanel from "@/components/evals/EvalsResultsPanel";
 
 export default function EvalsPage() {
   const [response, setResponse] = useState<EvalRunResponse | null>(null);
@@ -39,6 +41,15 @@ export default function EvalsPage() {
         setResponse(data);
       }
       setLoading(false);
+    },
+    [],
+  );
+
+  // When results are fetched, preserve the run response (don't clear it).
+  const handleResultsFetched = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    (_results: EvalResultsResponse) => {
+      // Run result preserved — do not clear `response` on successful results fetch.
     },
     [],
   );
@@ -95,17 +106,17 @@ export default function EvalsPage() {
                 </div>
               </dl>
             </div>
-
-            {/* Trace ID */}
-            <div className="pt-2">
-              <dt className="text-xs text-gray-500">Trace ID</dt>
-              <dd>
-                <TraceId traceId={response.trace_id} />
-              </dd>
-            </div>
           </div>
         )}
       </StateBlock>
+
+      {/* Results panel — shows results from GET /evals/results */}
+      <div className="mt-8">
+        <EvalsResultsPanel
+          runId={response?.run_id}
+          onResultsFetched={handleResultsFetched}
+        />
+      </div>
     </div>
   );
 }
