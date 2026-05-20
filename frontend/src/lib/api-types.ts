@@ -2,7 +2,7 @@
  * TypeScript types derived from sdd/03-api-contract.md.
  *
  * All types are optional where the contract allows fields to be absent.
- * No required fields for `sectors` or `eval_cases`.
+ * No required fields for domain-specific categorization fields or eval cases.
  */
 
 // ─── Health ────────────────────────────────────────────────────────────────
