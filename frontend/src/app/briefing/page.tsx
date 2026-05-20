@@ -5,7 +5,7 @@
  * to POST /briefing. No auto-calls on page load. Handles loading, error,
  * and result states.
  *
- * Result rendering is delegated to the BriefingResult component (TASK-FRONT-013).
+ * Result rendering is handled by the BriefingResult component.
  */
 
 "use client";
@@ -15,6 +15,7 @@ import { createBriefing } from "@/lib/api-client";
 import type { BriefingRequest, BriefingResponse } from "@/lib/api-types";
 import StateBlock from "@/components/StateBlock";
 import BriefingForm from "@/components/briefing/BriefingForm";
+import BriefingResult from "@/components/briefing/BriefingResult";
 
 export default function BriefingPage() {
   const [response, setResponse] = useState<BriefingResponse | null>(null);
@@ -66,34 +67,7 @@ export default function BriefingPage() {
         loadingLabel="Generando briefing..."
         onRetry={loading ? undefined : () => {}}
       >
-        {response && (
-          <div className="space-y-4">
-            {/* Placeholder for BriefingResult — rendered in TASK-FRONT-013 */}
-            <div className="rounded-lg border border-gray-700 bg-gray-900/40 p-4">
-              <p className="text-sm text-gray-400">
-                Resultado del briefing (renderizado en TASK-FRONT-013).
-              </p>
-              <p className="mt-2 text-xs text-gray-500">
-                briefing_markdown: {response.briefing_markdown.slice(0, 100)}...
-              </p>
-              {response.risk_level && (
-                <p className="mt-1 text-xs text-gray-500">
-                  risk_level: {response.risk_level}
-                </p>
-              )}
-              {response.council_review && (
-                <p className="mt-1 text-xs text-gray-500">
-                  council_review present: evidence_supported={response.council_review.evidence_supported}
-                </p>
-              )}
-              {response.trace_id && (
-                <p className="mt-1 text-xs text-gray-500">
-                  trace_id: {response.trace_id}
-                </p>
-              )}
-            </div>
-          </div>
-        )}
+        {response && <BriefingResult response={response} />}
       </StateBlock>
     </div>
   );
