@@ -28,7 +28,7 @@ export default function TraceId({ traceId }: TraceIdProps) {
   if (trimmed.length <= MAX_DISPLAY_LENGTH) {
     return (
       <span
-        className="font-mono text-xs text-gray-400"
+        className="whitespace-nowrap font-mono text-xs text-gray-400"
         title={trimmed}
       >
         {trimmed}
@@ -41,7 +41,7 @@ export default function TraceId({ traceId }: TraceIdProps) {
 
   return (
     <span
-      className="font-mono text-xs text-gray-400"
+      className="whitespace-nowrap font-mono text-xs text-gray-400"
       title={trimmed}
     >
       {display}
