@@ -100,7 +100,7 @@ Por eso esta carpeta separa:
 
 ## TASK-BRIEF-001: Validar BriefingRequest
 
-Estado: pending
+Estado: review
 Prioridad: must
 
 Objetivo:
@@ -149,7 +149,7 @@ Comandos de verificacion:
 
 ## TASK-BRIEF-002: Definir constantes de briefing
 
-Estado: pending
+Estado: review
 Prioridad: must
 
 Objetivo:
@@ -190,7 +190,7 @@ Comandos de verificacion:
 
 ## TASK-COUNCIL-001: Crear prompt de Narrative Analyst
 
-Estado: pending
+Estado: review
 Prioridad: should
 
 Objetivo:
@@ -238,7 +238,7 @@ Comandos de verificacion:
 
 ## TASK-COUNCIL-002: Crear prompt de Evidence Reviewer
 
-Estado: pending
+Estado: review
 Prioridad: should
 
 Objetivo:
@@ -282,7 +282,7 @@ Comandos de verificacion:
 
 ## TASK-COUNCIL-003: Crear prompt de Risk Reviewer
 
-Estado: pending
+Estado: review
 Prioridad: should
 
 Objetivo:
@@ -323,7 +323,7 @@ Comandos de verificacion:
 
 ## TASK-COUNCIL-004: Crear prompt de Final Synthesizer
 
-Estado: pending
+Estado: review
 Prioridad: must
 
 Objetivo:
@@ -367,7 +367,7 @@ Comandos de verificacion:
 
 ## TASK-COUNCIL-005: Crear parsers seguros del council
 
-Estado: pending
+Estado: review
 Prioridad: must
 
 Objetivo:
@@ -411,7 +411,7 @@ Comandos de verificacion:
 
 ## TASK-COUNCIL-006: Crear CouncilService inyectable
 
-Estado: pending
+Estado: review
 Prioridad: must
 
 Objetivo:
@@ -464,7 +464,7 @@ Comandos de verificacion:
 
 ## TASK-COUNCIL-007: Crear factories lazy de chains del council
 
-Estado: pending
+Estado: review
 Prioridad: should
 
 Objetivo:
@@ -509,7 +509,7 @@ Comandos de verificacion:
 
 ## TASK-BRIEF-003: Crear respuesta de briefing sin contexto
 
-Estado: pending
+Estado: review
 Prioridad: must
 
 Objetivo:
@@ -558,7 +558,7 @@ Comandos de verificacion:
 
 ## TASK-BRIEF-004: Crear borrador grounded de briefing
 
-Estado: pending
+Estado: review
 Prioridad: must
 
 Objetivo:
@@ -602,7 +602,7 @@ Comandos de verificacion:
 
 ## TASK-BRIEF-005: Crear BriefingService inyectable
 
-Estado: pending
+Estado: review
 Prioridad: must
 
 Objetivo:
@@ -655,7 +655,7 @@ Comandos de verificacion:
 
 ## TASK-BRIEF-006: Exponer POST /briefing en FastAPI
 
-Estado: pending
+Estado: review
 Prioridad: must
 
 Objetivo:

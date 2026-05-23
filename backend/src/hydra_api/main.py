@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import logging
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -11,14 +13,17 @@ from hydra_api.logging import setup_logging
 from hydra_api.schemas import (
     BriefingRequest,
     BriefingResponse,
+    DocumentsResponse,
     EvalRunRequest,
     EvalRunResponse,
     EvalResultsResponse,
+    NarrativesResponse,
     QueryRequest,
     QueryResponse,
 )
 
 setup_logging()
+logger = logging.getLogger(__name__)
 
 app = FastAPI(title="hydra-api")
 
@@ -40,6 +45,46 @@ app.add_exception_handler(HTTPException, http_exception_handler)
 def healthcheck() -> dict:
     """Health check endpoint."""
     return {"status": "ok", "service": "hydra-api"}
+
+
+@app.get("/documents", response_model=DocumentsResponse)
+def documents() -> DocumentsResponse:
+    """Return public document summaries from PostgreSQL."""
+    catalog_service = getattr(app.state, "catalog_service", None)
+    try:
+        if catalog_service is None:
+            from hydra_api.catalog_service import create_catalog_service
+
+            catalog_service = create_catalog_service()
+            app.state.catalog_service = catalog_service
+
+        return catalog_service.list_documents()
+    except Exception as exc:
+        logger.warning("Documents endpoint unavailable (%s)", exc.__class__.__name__)
+        raise HTTPException(
+            status_code=503,
+            detail="Documents service is unavailable.",
+        )
+
+
+@app.get("/narratives", response_model=NarrativesResponse)
+def narratives() -> NarrativesResponse:
+    """Return aggregated narrative frames from PostgreSQL extractions."""
+    catalog_service = getattr(app.state, "catalog_service", None)
+    try:
+        if catalog_service is None:
+            from hydra_api.catalog_service import create_catalog_service
+
+            catalog_service = create_catalog_service()
+            app.state.catalog_service = catalog_service
+
+        return catalog_service.list_narratives()
+    except Exception as exc:
+        logger.warning("Narratives endpoint unavailable (%s)", exc.__class__.__name__)
+        raise HTTPException(
+            status_code=503,
+            detail="Narratives service is unavailable.",
+        )
 
 
 @app.post("/query")

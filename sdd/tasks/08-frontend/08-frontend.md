@@ -87,7 +87,7 @@
 
 ## TASK-FRONT-001: Inicializar package Next con pnpm
 
-Estado: pending
+Estado: review
 Prioridad: must
 
 Objetivo:
@@ -134,7 +134,7 @@ Comandos de verificacion:
 
 ## TASK-FRONT-002: Configurar Next, TypeScript, Tailwind y ESLint
 
-Estado: pending
+Estado: review
 Prioridad: must
 
 Objetivo:
@@ -188,7 +188,7 @@ Comandos de verificacion:
 
 ## TASK-FRONT-003: Definir entorno publico y tipos de contrato API
 
-Estado: pending
+Estado: review
 Prioridad: must
 
 Objetivo:
@@ -235,7 +235,7 @@ Comandos de verificacion:
 
 ## TASK-FRONT-004: Crear cliente HTTP seguro del backend
 
-Estado: pending
+Estado: review
 Prioridad: must
 
 Objetivo:
@@ -286,7 +286,7 @@ Comandos de verificacion:
 
 ## TASK-FRONT-005: Crear shell funcional y navegacion
 
-Estado: pending
+Estado: review
 Prioridad: must
 
 Objetivo:
@@ -334,7 +334,7 @@ Comandos de verificacion:
 
 ## TASK-FRONT-006: Crear componentes de estado y formato seguros
 
-Estado: pending
+Estado: review
 Prioridad: must
 
 Objetivo:
@@ -381,7 +381,7 @@ Comandos de verificacion:
 
 ## TASK-FRONT-007: Crear vista Corpus
 
-Estado: pending
+Estado: review
 Prioridad: must
 
 Objetivo:
@@ -430,7 +430,7 @@ Comandos de verificacion:
 
 ## TASK-FRONT-008: Crear vista Narrativas
 
-Estado: pending
+Estado: review
 Prioridad: must
 
 Objetivo:
@@ -480,7 +480,7 @@ Comandos de verificacion:
 
 ## TASK-FRONT-009: Crear formulario HYDRA Analyst
 
-Estado: pending
+Estado: review
 Prioridad: must
 
 Objetivo:
@@ -529,7 +529,7 @@ Comandos de verificacion:
 
 ## TASK-FRONT-010: Renderizar respuesta estructurada de Analyst
 
-Estado: pending
+Estado: review
 Prioridad: must
 
 Objetivo:
@@ -578,7 +578,7 @@ Comandos de verificacion:
 
 ## TASK-FRONT-011: Mostrar evidencias y trace_id en Analyst
 
-Estado: pending
+Estado: review
 Prioridad: must
 
 Objetivo:
@@ -623,7 +623,7 @@ Comandos de verificacion:
 
 ## TASK-FRONT-012: Crear formulario Briefing
 
-Estado: pending
+Estado: review
 Prioridad: must
 
 Objetivo:
@@ -671,7 +671,7 @@ Comandos de verificacion:
 
 ## TASK-FRONT-013: Renderizar briefing, riesgo, council review y trace_id
 
-Estado: pending
+Estado: review
 Prioridad: must
 
 Objetivo:
@@ -721,7 +721,7 @@ Comandos de verificacion:
 
 ## TASK-FRONT-014: Crear vista Evals para ejecutar casos manuales
 
-Estado: pending
+Estado: review
 Prioridad: must
 
 Objetivo:
@@ -771,7 +771,7 @@ Comandos de verificacion:
 
 ## TASK-FRONT-015: Mostrar resultados de evals
 
-Estado: pending
+Estado: review
 Prioridad: must
 
 Objetivo:
@@ -821,7 +821,7 @@ Comandos de verificacion:
 
 ## TASK-FRONT-016: Endurecer loading, errores y estados vacios transversales
 
-Estado: pending
+Estado: review
 Prioridad: must
 
 Objetivo:
@@ -873,7 +873,7 @@ Comandos de verificacion:
 
 ## TASK-FRONT-017: Validar build final y ausencia de secretos frontend
 
-Estado: pending
+Estado: review
 Prioridad: must
 
 Objetivo:

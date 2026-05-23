@@ -1,5 +1,4 @@
 import Link from "next/link";
-import AppShell from "@/components/AppShell";
 
 const VIEW_LINKS = [
   {
@@ -31,7 +30,7 @@ const VIEW_LINKS = [
 
 export default function HomePage() {
   return (
-    <AppShell>
+    <>
       <h1 className="mb-6 text-2xl font-semibold text-gray-100">Dashboard</h1>
 
       <div className="mb-6 rounded border border-yellow-900/50 bg-yellow-950/30 p-3 text-sm text-yellow-200">
@@ -53,6 +52,6 @@ export default function HomePage() {
           </Link>
         ))}
       </div>
-    </AppShell>
+    </>
   );
 }

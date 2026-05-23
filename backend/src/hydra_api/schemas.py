@@ -100,6 +100,16 @@ class Document(BaseModel):
     processed: bool = False
 
 
+class DocumentSummary(BaseModel):
+    """Public document summary for GET /documents."""
+
+    document_id: str
+    title: str
+    source: str
+    published_at: str | None = None
+    processed: bool = False
+
+
 # ---------------------------------------------------------------------------
 # Chunks
 # ---------------------------------------------------------------------------
@@ -431,7 +441,7 @@ class IngestResponse(BaseModel):
 class DocumentsResponse(BaseModel):
     """Response body for GET /documents."""
 
-    documents: list[Document] = Field(default_factory=list)
+    documents: list[DocumentSummary] = Field(default_factory=list)
 
 
 # ---------------------------------------------------------------------------

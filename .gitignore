@@ -369,3 +369,9 @@ poetry.toml
 
 # LSP config files
 pyrightconfig.json
+
+docs/tfm-entrega-hydra-extended*
+docs/tfm-entrega-hydra*
+docs/tokens.png
+
+.factory/

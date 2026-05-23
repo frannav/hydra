@@ -18,6 +18,7 @@ import type { EvalRunRequest, EvalRunResponse, EvalResultsResponse } from "@/lib
 import StateBlock from "@/components/StateBlock";
 import EvalsRunForm from "@/components/evals/EvalsRunForm";
 import EvalsResultsPanel from "@/components/evals/EvalsResultsPanel";
+import TraceId from "@/components/TraceId";
 
 export default function EvalsPage() {
   const [response, setResponse] = useState<EvalRunResponse | null>(null);
@@ -76,7 +77,6 @@ export default function EvalsPage() {
         errorMessage={error ?? undefined}
         emptyLabel="Ingresa al menos un case_id para ejecutar los evals manualmente."
         loadingLabel="Ejecutando evals..."
-        onRetry={loading ? undefined : () => {}}
       >
         {response && (
           <div className="space-y-4 rounded-lg border border-gray-800 bg-gray-900/40 p-4">
@@ -102,6 +102,12 @@ export default function EvalsPage() {
                   <dt className="text-xs text-gray-500">Results Path</dt>
                   <dd className="font-mono text-sm text-gray-200">
                     {response.results_path}
+                  </dd>
+                </div>
+                <div className="sm:col-span-2">
+                  <dt className="text-xs text-gray-500">Trace ID</dt>
+                  <dd>
+                    <TraceId traceId={response.trace_id} />
                   </dd>
                 </div>
               </dl>

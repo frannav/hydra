@@ -67,7 +67,6 @@ export default function AnalystPage() {
         errorMessage={error ?? undefined}
         emptyLabel="Ingresa una pregunta para consultar el analista HYDRA."
         loadingLabel="Consultando..."
-        onRetry={loading ? undefined : () => {}}
       >
         {response && <AnalystResult response={response} />}
       </StateBlock>

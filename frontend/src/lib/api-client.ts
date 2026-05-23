@@ -19,6 +19,10 @@ import type {
 } from "./api-types";
 import { getApiBaseUrl } from "./env";
 
+// ─── Configuration ──────────────────────────────────────────────────────────
+
+const API_TIMEOUT_MS = 15_000;
+
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
 /**
@@ -102,14 +106,20 @@ async function fetchJson<T>(
   url: string,
   options?: RequestInit,
 ): Promise<{ data: T | null; error: { code: string; message: string } | null }> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
+
   try {
     const response = await fetch(url, {
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json",
       },
+      signal: controller.signal,
       ...options,
     });
+
+    clearTimeout(timeoutId);
 
     // No content (204)
     if (response.status === 204) {
@@ -142,7 +152,18 @@ async function fetchJson<T>(
 
     return { data: parsed, error: null };
   } catch (err) {
-    // Network error, timeout, DNS failure, etc.
+    clearTimeout(timeoutId);
+    // AbortError means timeout
+    if (err instanceof DOMException && err.name === "AbortError") {
+      return {
+        data: null,
+        error: {
+          code: "timeout",
+          message: "La solicitud tardó demasiado. Intenta de nuevo.",
+        },
+      };
+    }
+    // Network error, DNS failure, etc.
     return {
       data: null,
       error: {

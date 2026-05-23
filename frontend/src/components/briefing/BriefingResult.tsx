@@ -2,7 +2,7 @@
  * BriefingResult — renders the response from POST /briefing.
  *
  * Renders:
- * - briefing_markdown via react-markdown (safe, no dangerouslySetInnerHTML)
+ * - briefing_markdown via react-markdown (safe, no unsafe HTML APIs)
  * - risk_level badge (tolerates unknown values)
  * - CouncilReviewPanel (evidence_supported, unsupported_claims, risk_review)
  * - TraceId component

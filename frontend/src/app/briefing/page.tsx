@@ -65,7 +65,6 @@ export default function BriefingPage() {
         errorMessage={error ?? undefined}
         emptyLabel="Ingresa una pregunta para generar un briefing de inteligencia narrativa."
         loadingLabel="Generando briefing..."
-        onRetry={loading ? undefined : () => {}}
       >
         {response && <BriefingResult response={response} />}
       </StateBlock>

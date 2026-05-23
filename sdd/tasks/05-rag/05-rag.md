@@ -102,7 +102,7 @@ No usar una integracion que cree tablas LangChain paralelas si eso evita `docume
 
 ## TASK-RAG-001: Anadir dependencias RAG minimas
 
-Estado: pending
+Estado: review
 Prioridad: must
 
 Objetivo:
@@ -149,7 +149,7 @@ Comandos de verificacion:
 
 ## TASK-RAG-002: Definir constantes RAG
 
-Estado: pending
+Estado: review
 Prioridad: must
 
 Objetivo:
@@ -189,7 +189,7 @@ Comandos de verificacion:
 
 ## TASK-RAG-003: Validar QueryRequest
 
-Estado: pending
+Estado: review
 Prioridad: must
 
 Objetivo:
@@ -231,7 +231,7 @@ Comandos de verificacion:
 
 ## TASK-RAG-004: Crear factory lazy de embeddings
 
-Estado: pending
+Estado: review
 Prioridad: must
 
 Objetivo:
@@ -274,7 +274,7 @@ Comandos de verificacion:
 
 ## TASK-RAG-005: Validar vectores de embedding
 
-Estado: pending
+Estado: review
 Prioridad: must
 
 Objetivo:
@@ -315,7 +315,7 @@ Comandos de verificacion:
 
 ## TASK-RAG-006: Crear modulo de storage RAG sin efectos en import
 
-Estado: pending
+Estado: review
 Prioridad: must
 
 Objetivo:
@@ -356,7 +356,7 @@ Comandos de verificacion:
 
 ## TASK-RAG-007: Seleccionar chunks pendientes de embedding
 
-Estado: pending
+Estado: review
 Prioridad: must
 
 Objetivo:
@@ -399,7 +399,7 @@ Comandos de verificacion:
 
 ## TASK-RAG-008: Actualizar embedding de chunk existente
 
-Estado: pending
+Estado: review
 Prioridad: must
 
 Objetivo:
@@ -442,7 +442,7 @@ Comandos de verificacion:
 
 ## TASK-RAG-009: Crear servicio de indexacion inyectable
 
-Estado: pending
+Estado: review
 Prioridad: must
 
 Objetivo:
@@ -486,7 +486,7 @@ Comandos de verificacion:
 
 ## TASK-RAG-010: Implementar busqueda vectorial sobre document_chunks
 
-Estado: pending
+Estado: review
 Prioridad: must
 
 Objetivo:
@@ -536,7 +536,7 @@ Comandos de verificacion:
 
 ## TASK-RAG-011: Normalizar resultados recuperados
 
-Estado: pending
+Estado: review
 Prioridad: must
 
 Objetivo:
@@ -578,7 +578,7 @@ Comandos de verificacion:
 
 ## TASK-RAG-012: Crear retriever LCEL inyectable
 
-Estado: pending
+Estado: review
 Prioridad: must
 
 Objetivo:
@@ -621,7 +621,7 @@ Comandos de verificacion:
 
 ## TASK-RAG-013: Crear prompt de respuesta grounded
 
-Estado: pending
+Estado: review
 Prioridad: must
 
 Objetivo:
@@ -666,7 +666,7 @@ Comandos de verificacion:
 
 ## TASK-RAG-014: Crear chain de respuesta con modelo inyectable
 
-Estado: pending
+Estado: review
 Prioridad: must
 
 Objetivo:
@@ -708,7 +708,7 @@ Comandos de verificacion:
 
 ## TASK-RAG-015: Implementar respuesta sin contexto suficiente
 
-Estado: pending
+Estado: review
 Prioridad: must
 
 Objetivo:
@@ -752,7 +752,7 @@ Comandos de verificacion:
 
 ## TASK-RAG-016: Crear servicio de consulta RAG
 
-Estado: pending
+Estado: review
 Prioridad: must
 
 Objetivo:
@@ -798,7 +798,7 @@ Comandos de verificacion:
 
 ## TASK-RAG-017: Exponer POST /query en FastAPI
 
-Estado: pending
+Estado: review
 Prioridad: must
 
 Objetivo:

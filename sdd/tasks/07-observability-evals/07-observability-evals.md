@@ -106,7 +106,7 @@ Por eso esta carpeta separa:
 
 ## TASK-OBS-001: Anadir dependencia Langfuse
 
-Estado: pending
+Estado: review
 Prioridad: must
 
 Objetivo:
@@ -148,7 +148,7 @@ Comandos de verificacion:
 
 ## TASK-OBS-002: Definir constantes y redaccion segura de observabilidad
 
-Estado: pending
+Estado: review
 Prioridad: must
 
 Objetivo:
@@ -190,7 +190,7 @@ Comandos de verificacion:
 
 ## TASK-OBS-003: Crear trace_id local y TraceContext
 
-Estado: pending
+Estado: review
 Prioridad: must
 
 Objetivo:
@@ -231,7 +231,7 @@ Comandos de verificacion:
 
 ## TASK-OBS-004: Crear emisor Langfuse lazy con fallback local
 
-Estado: pending
+Estado: review
 Prioridad: must
 
 Objetivo:
@@ -276,7 +276,7 @@ Comandos de verificacion:
 
 ## TASK-OBS-005: Trazar ciclo de retrieval en `/query`
 
-Estado: pending
+Estado: review
 Prioridad: must
 
 Objetivo:
@@ -322,7 +322,7 @@ Comandos de verificacion:
 
 ## TASK-OBS-006: Trazar generacion de respuesta RAG
 
-Estado: pending
+Estado: review
 Prioridad: must
 
 Objetivo:
@@ -370,7 +370,7 @@ Comandos de verificacion:
 
 ## TASK-OBS-007: Trazar briefing y council
 
-Estado: pending
+Estado: review
 Prioridad: must
 
 Objetivo:
@@ -464,7 +464,7 @@ Comandos de verificacion:
 
 ## TASK-EVAL-001: Validar EvalRunRequest y metricas extendidas
 
-Estado: pending
+Estado: review
 Prioridad: must
 
 Objetivo:
@@ -508,7 +508,7 @@ Comandos de verificacion:
 
 ## TASK-EVAL-002: Definir constantes y rutas de evals
 
-Estado: pending
+Estado: review
 Prioridad: must
 
 Objetivo:
@@ -549,7 +549,7 @@ Comandos de verificacion:
 
 ## TASK-EVAL-003: Crear loader seguro de eval cases
 
-Estado: pending
+Estado: review
 Prioridad: must
 
 Objetivo:
@@ -596,7 +596,7 @@ Comandos de verificacion:
 
 ## TASK-EVAL-004: Implementar Precision@k
 
-Estado: pending
+Estado: review
 Prioridad: must
 
 Objetivo:
@@ -640,7 +640,7 @@ Comandos de verificacion:
 
 ## TASK-EVAL-005: Implementar JSON validity
 
-Estado: pending
+Estado: review
 Prioridad: must
 
 Objetivo:
@@ -682,7 +682,7 @@ Comandos de verificacion:
 
 ## TASK-EVAL-006: Implementar ontology mapping
 
-Estado: pending
+Estado: review
 Prioridad: must
 
 Objetivo:
@@ -728,7 +728,7 @@ Comandos de verificacion:
 
 ## TASK-EVAL-007: Implementar coordination caution
 
-Estado: pending
+Estado: review
 Prioridad: must
 
 Objetivo:
@@ -769,7 +769,7 @@ Comandos de verificacion:
 
 ## TASK-EVAL-008: Implementar latency/cost desde traces locales
 
-Estado: pending
+Estado: review
 Prioridad: must
 
 Objetivo:
@@ -812,7 +812,7 @@ Comandos de verificacion:
 
 ## TASK-EVAL-009: Crear groundedness judge inyectable
 
-Estado: pending
+Estado: review
 Prioridad: must
 
 Objetivo:
@@ -856,7 +856,7 @@ Comandos de verificacion:
 
 ## TASK-EVAL-010: Crear EvalService inyectable
 
-Estado: pending
+Estado: review
 Prioridad: must
 
 Objetivo:
@@ -906,7 +906,7 @@ Comandos de verificacion:
 
 ## TASK-EVAL-011: Exportar eval_results.json
 
-Estado: pending
+Estado: review
 Prioridad: must
 
 Objetivo:
@@ -951,7 +951,7 @@ Comandos de verificacion:
 
 ## TASK-EVAL-012: Exponer endpoints de evals
 
-Estado: pending
+Estado: review
 Prioridad: must
 
 Objetivo:
@@ -999,7 +999,7 @@ Comandos de verificacion:
 
 ## TASK-EVAL-013: Enviar scores a Langfuse de forma opcional
 
-Estado: pending
+Estado: review
 Prioridad: must
 
 Objetivo:
